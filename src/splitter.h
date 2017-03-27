@@ -34,10 +34,10 @@ int count_intersection(vector<int> &a, int *cases, int nc);
 class splitter {
 public:
   /** Constructor for the splitter class                 */
-  splitter( IntegerMatrix haplotypes, int sampsize, int SNPcount) 
-    :haps(haplotypes)    ,samples(sampsize)  ,nSNP(SNPcount) {
-    vector<int> a(sampsize);
-    for (int i=0;i<sampsize;i++) a[i]=i;
+  splitter( IntegerMatrix haplotypes) 
+    :haps(haplotypes)    ,samples(haplotypes.nrow())  ,nSNP(haplotypes.ncol()) {
+    vector<int> a(haplotypes.nrow());
+    for (int i=0; i<haplotypes.nrow(); i++) a[i]=i;
     leaves.push_back(new binode(a));
     root=leaves.front();
   }

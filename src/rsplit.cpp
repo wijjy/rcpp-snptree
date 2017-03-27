@@ -19,7 +19,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 SEXP  simple_split(IntegerMatrix d, IntegerVector positions) {
  
-    splitter *s = new splitter(d, d.nrow(), d.ncol());            // define the splitter object s
+    splitter *s = new splitter(d);            // define the splitter object s
     for (int i=0; i< positions.size(); i++) s->split(positions[i]);   // split at positions
   
  
@@ -28,4 +28,9 @@ SEXP  simple_split(IntegerMatrix d, IntegerVector positions) {
 }
 
 
+// [[Rcpp::export]]
+int  nleaves(SEXP ptr) {
+  Rcpp::XPtr< splitter > s(ptr);
+  return s->nleaves();
+}
 
