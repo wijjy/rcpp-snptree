@@ -30,7 +30,7 @@ extern "C" {
                      char **statPick)
   {
 
-    TNT::Array2D<int> d(*samplesize, *nSNP, data);
+     TNT::Array2D<int> d(*samplesize, *nSNP, data);
     splitter<int> s(d,d.dim1(), d.dim2());
     for (int i=0;i<*npos;i++) s.split(positions[i]);
     

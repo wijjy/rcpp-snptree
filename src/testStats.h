@@ -24,14 +24,15 @@ double SqSevonStat(T x, T n, double p) {
 
 #ifdef USE_R
 #include "Rmath.h"
+#include "R.h"
 
 template <typename T>
 double LogP(T x, T n, double p)
 {
   if (static_cast<double>(x)/static_cast<double>(n) < p)
-    return -pbinom(static_cast<double>(x),p,static_cast<unsigned int>(n),1,1);
+    return -R::pbinom(static_cast<double>(x),p,static_cast<unsigned int>(n),1,1);
   else
-    return -pbinom(static_cast<double>(x-1),p,static_cast<double>(n),1,1);
+    return -R::pbinom(static_cast<double>(x-1),p,static_cast<double>(n),1,1);
 }  
 
 
@@ -40,11 +41,11 @@ double LogPNorm(T x, T n, double p)
 {
   double phat=static_cast<double>(x)/static_cast<double>(n) ;
   if (phat < p)
-    return -pbinom(static_cast<double>(x),p,static_cast<unsigned int>(n),1,1)
-    +pbinom(static_cast<double>(x),phat,static_cast<unsigned int>(n),1,1);
+    return -R::pbinom(static_cast<double>(x),p,static_cast<unsigned int>(n),1,1)
+    +R::pbinom(static_cast<double>(x),phat,static_cast<unsigned int>(n),1,1);
   else
-    return -pbinom(static_cast<double>(x-1),p,static_cast<unsigned int>(n),0,1)
-    +pbinom(static_cast<double>(x),phat,static_cast<unsigned int>(n),1,1);
+    return -R::pbinom(static_cast<double>(x-1),p,static_cast<unsigned int>(n),0,1)
+    +R::pbinom(static_cast<double>(x),phat,static_cast<unsigned int>(n),1,1);
 }  
 
 #else

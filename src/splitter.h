@@ -5,9 +5,9 @@
 #include <list>
 #include <algorithm>
 #include <stdexcept>
-#include "binode.h"
+#include "rcpp_binode.h"
 #include "testStats.h"
-#include "util.h"
+//#include "util.h"
 
 using std::list;
 using std::ostream;
@@ -38,7 +38,7 @@ template<typename T>
 class splitter {
 public:
   /** Constructor for the splitter class                 */
-  splitter( T **haplotypes, int sampsize, int SNPcount) 
+  splitter( IntegerMatrix *haplotypes, int sampsize, int SNPcount) 
     :haps(haplotypes)    ,samples(sampsize)  ,nSNP(SNPcount) {
     vector<int> a(sampsize);
     for (int i=0;i<sampsize;i++) a[i]=i;
@@ -151,8 +151,8 @@ public:
     }
     case 't': {
       root->RecurseLeftRightDistances(cases);
-      root->distance[0][0]=9999;
-      root->distance[1][0]=9999;
+      root->distance(0, 0) = 9999;
+      root->distance(0, 1) = 9999;
       root->RecurseUpDistances();
       std::vector<double> tmp(6,0.0);
       LRNIterator<binode> i(root);  
@@ -160,16 +160,16 @@ public:
       while (!i.isend()) {
 
         if ((*i)->localCC[0]==1)                   // Cases to Cases
-          tmp[0] += (*i)->distance[0][0];
+          tmp[0] += (*i)->distance(0, 0);
      
         if ((*i)->localCC[1]-(*i)->localCC[0]==1)  // Controls to Controls
-          tmp[1] += (*i)->distance[1][0];
+          tmp[1] += (*i)->distance(1, 0);
        
         if ((*i)->localCC[1]==(*i)->localCC[0])    // Cases to Controls
-          tmp[2] +=  (*i)->localCC[0]*(*i)->distance[1][0];
+          tmp[2] +=  (*i)->localCC[0]*(*i)->distance(1, 0);
         
         if ((*i)->localCC[0]==0)                   // Controls to Cases
-          tmp[3] += ((*i)->localCC[1]-(*i)->localCC[0])*(*i)->distance[0][0];
+          tmp[3] += ((*i)->localCC[1]-(*i)->localCC[0])*(*i)->distance(0, 0);
        
         i.nextLeaf();
       }
@@ -239,14 +239,14 @@ public:
   /** Get the numbers of cases and controls at the internal nodes and the 
       leaves - in lexical order */
   void getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal);
-  void getCaseControlLeaves(TNT::Array2D<int> &ncc,  std::vector<int> &cases);
+  void getCaseControlLeaves(IntegerMatrix &ncc,  std::vector<int> &cases);
   /** Get the index of splits for each node - that is which of the SNPs the node was split on  */
   void getNodesPositions(std::vector<int> &pos);
   /** Get the labels at internal nodes in ape format */
   void getNodesLabels(std::vector<std::vector<int> > &labs);
   /** First need to think about the lengths and check them   */
   void getLengths(int CentrePos,int *posLRnodes, int *posLRtip);
-  void getTipLengths(int StartingPoint, TNT::Array2D<int> &posLRtip);
+  void getTipLengths(int StartingPoint, IntegerMatrix &posLRtip);
   
   /** Get the leaves (it doesn'r matter is this is NLR or LRN   */
   std::vector<binode *> GetLeaves() {
@@ -381,14 +381,14 @@ void splitter<T>::getNodesPositions(std::vector<int> &pos)
 /** Get the number of cases and controls at the leaves - this should be in 
  * lexical search order */
 template <typename T>
-void splitter<T>::getCaseControlLeaves(TNT::Array2D<int> &ncc, std::vector<int> &cases) 
+void splitter<T>::getCaseControlLeaves(IntegerMatrix &ncc, std::vector<int> &cases) 
   {
     NLRIterator<binode> ii(root);
     ii.nextLeaf();   // the root can never be a leaf
     int count=0;
     while (!ii.isend()) {
-      ncc[count][0] = count_intersection((*ii)->labels,cases);
-      ncc[count][1] = (*ii)->labels.size()-ncc[count][0];
+      ncc(count, 0) = count_intersection((*ii)->labels,cases);
+      ncc(count, 1) = (*ii)->labels.size()-ncc(count, 0);
       count++;
       ii.nextLeaf();
     }
@@ -450,7 +450,7 @@ void splitter<T>::getLengths(int CentrePos,int *posLRnode, int *posLRtip)
   }
 
 template <typename T>
-void splitter<T>::getTipLengths(int StartingPoint, TNT::Array2D<int> &posLRtip) 
+void splitter<T>::getTipLengths(int StartingPoint, IntegerMatrix &posLRtip) 
 {
   NLRIterator<binode> ii(root);
   ii.nextLeaf();
@@ -460,8 +460,8 @@ void splitter<T>::getTipLengths(int StartingPoint, TNT::Array2D<int> &posLRtip)
       // a single node at this split.  shared length is 0 or the entire choice of 
       // positions - leave this for another function to decide, and return -1 for 
       // both left and right
-      posLRtip[countTip][0]=-1;
-      posLRtip[countTip++][1]=-1;
+      posLRtip(countTip, 0) = -1;
+      posLRtip(countTip++, 1) = -1;
     } else {
       int Left,Right;
       size_t jj;
@@ -486,8 +486,8 @@ void splitter<T>::getTipLengths(int StartingPoint, TNT::Array2D<int> &posLRtip)
       }
       // Right should hold the maximum split to the right
       // or nSNP if it has reached the end
-      posLRtip[countTip][0]=Left;
-      posLRtip[countTip++][1]=Right;
+      posLRtip(countTip, 0) = Left;
+      posLRtip(countTip++, 1) = Right;
     }
     ii.nextLeaf();
   }

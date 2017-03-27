@@ -1,4 +1,4 @@
-useDynLib(snptree)
+useDynLib(rcpp-snptree)
 exportPattern("^[[:alpha:]]+")
-importFrom("graphics", "plot")
+importFrom(Rcpp, "graphics", "plot")
 

@@ -7,7 +7,9 @@
 #include <iosfwd>
 #include <iosfwd>
 #include <stack>
-#include "tnt/tnt.h"
+#include <cassert>
+#include <Rcpp.h>
+using namespace Rcpp;
 
 
 /** Note that both of these should be sorted                               */
@@ -151,17 +153,17 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
     return res;
   }
 
-   int GetLength(int centre,const TNT::Array2D<int> &haps)
+   int GetLength(int centre,const IntegerMatrix &haps)
    {
    		if (labels.size()==1) return -1;
-   		int nSNP=haps.dim2();
+   		int nSNP=haps.ncol();
         int Left,Right;
         size_t jj;
         // find the maximum value to the left that is shared
-        for (Left=centre;Left>=0;Left--) {
-          int MatchSNP=haps[labels[0]][Left];
+        for (Left=centre; Left>=0;Left--) {
+          int MatchSNP=haps(labels[0], Left);
           for (jj=1;jj<labels.size();jj++) {
-            if (haps[labels[jj]][Left]!=MatchSNP) break;
+            if (haps(labels[jj], Left) != MatchSNP) break;
           }
           // we we have reached the end of labels and there was no split
           // then continue - otherwise break
@@ -169,9 +171,9 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
         }
         // Left should hold the maximum split to the left
         for (  Right=centre;Right<nSNP;Right++) {
-          int MatchSNP=haps[labels[0]][Right];
+          int MatchSNP=haps(labels[0], Right);
           for (jj=1;jj<labels.size();jj++) {
-            if (haps[labels[jj]][Right]!=MatchSNP) break;
+            if (haps(labels[jj], Right) !=MatchSNP) break;
           }
           if (jj!=labels.size()) break;
         }
@@ -498,7 +500,7 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
 
 
   std::vector<std::pair<int,double> >
-  maxLengths(int centre, int k, int maxn, const TNT::Array2D<int> &data) {
+  maxLengths(int centre, int k, int maxn, const IntegerMatrix &data) {
     std::vector<std::pair<int,double> > Left;
     if (labels.size()<static_cast<size_t>(k)) return Left;
     if (isleaf()) {
@@ -515,12 +517,12 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
   }
   void RecurseUpDistances() {
     assert(!isleaf());
-    left->distance[0][0] = std::min(distance[0][2],distance[0][0])+1;
-    left->distance[1][0] = std::min(distance[1][2],distance[1][0])+1;
+    left->distance(0, 0) = std::min(distance(0, 2), distance(0, 0))+1;
+    left->distance(1, 0) = std::min(distance(1, 2), distance(1, 0))+1;
     if (!left->isleaf())   left->RecurseUpDistances();
 
-    right->distance[0][0] = std::min(distance[0][0],distance[0][1])+1;
-    right->distance[1][0] = std::min(distance[1][0],distance[1][1])+1;
+    right->distance(0, 0) = std::min(distance(0,0), distance(0, 1))+1;
+    right->distance(1, 0) = std::min(distance(1, 0), distance(1, 1))+1;
     if (!right->isleaf())   right->RecurseUpDistances();
   }
 
@@ -532,7 +534,7 @@ public:
   binode *up;
   int position;     // position of the SNP that causes this split
   std::vector<int> labels;
-  TNT::Array2D<int> distance;   /** Distances for tree distance calculations    */
+  IntegerMatrix distance;   /** Distances for tree distance calculations    */
   int localCC[2];
 };
 

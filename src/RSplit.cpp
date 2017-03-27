@@ -3,9 +3,8 @@
 #include <iostream>
 #include <stdexcept>
 #include "splitter.h"
-#include "binode.h"
-#include "gsl_rand.h"
-#include "tnt/tnt.h"
+#include "rcpp_binode.h"
+//#include "gsl_rand.h"
 
 
 extern "C" {
@@ -20,8 +19,8 @@ extern "C" {
                      int *leafcount, 
                      int *comblabels, 
                      int *nodepos)  {  
-    TNT::Array2D<int> d(*samplesize, *nSNP, data);     // convert the data into a 2-d tnt array
-    splitter<int> s(d, d.dim1(), d.dim2());            // define the splitter object s
+    IntegerMatrix d(*samplesize, *nSNP, data);     // convert the data into a 2-d tnt array
+    splitter<int> s(d, d.nrow(), d.ncol());            // define the splitter object s
     for (int i=0;i<*npos;i++) s.split(positions[i]);   // split at positions
     *len=s.nleaves();                                  // how many leaves do we have on the tree
     
@@ -62,7 +61,7 @@ extern "C" {
               int *xxx,
               int *nleaves) 
   {  
-    TNT::Array2D<int> d(*samplesize, *nSNP, data);
+    IntegerMatrix d(*samplesize, *nSNP, data);
     splitter<int> s(d, *samplesize, *nSNP);
     for (int i=0;i< *nSNP;i++) s.split(i);
     *nleaves = s.nleaves();
