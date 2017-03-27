@@ -15,8 +15,7 @@ using std::vector;
 using std::pair;
 using std::stack;
 
-template <typename T> 
-bool SNPmatch( T **hap, const vector<int> &rows, int col);
+bool SNPmatch( const IntegerMatrix &hap, const vector<int> &rows, int col);
 
 template<typename T>
 bool mismatch(std::vector<T> &labels, T *cases, int nc);
@@ -24,21 +23,18 @@ bool mismatch(std::vector<T> &labels, T *cases, int nc);
 template<typename T>
 bool mismatch2(vector<T> &labels, T *cases, int nc);
 
-template<typename T>
-int count_intersection(vector<T> &a, vector<T> &b);
+int count_intersection(vector<int> &a, vector<int> &b);
 /** Note that both of these should be sorted                               */
-template<typename T>
-int count_intersection(vector<T> &a, T *cases, int nc);
+int count_intersection(vector<int> &a, int *cases, int nc);
 
 /** A class to create a splitting haplotype tree *
  * The constructor just creates the root.  
  * The split function splits the leaves depending on the 
  * haplotypes that you have.    */
-template<typename T>
 class splitter {
 public:
   /** Constructor for the splitter class                 */
-  splitter( IntegerMatrix *haplotypes, int sampsize, int SNPcount) 
+  splitter( IntegerMatrix haplotypes, int sampsize, int SNPcount) 
     :haps(haplotypes)    ,samples(sampsize)  ,nSNP(SNPcount) {
     vector<int> a(sampsize);
     for (int i=0;i<sampsize;i++) a[i]=i;
@@ -199,15 +195,16 @@ public:
 
 
 
-  std::vector<std::pair<double, std::vector< binode *> > > getNodes( const vector<int> &cases,int maxk=5,char pick="P") {
+  std::vector<std::pair<double, std::vector< binode *> > > 
+        getNodes( const vector<int> &cases,int maxk=5, char pick='P') {
     double pp=cases.size()/static_cast<double>(samples);
     int CC[2];
     switch(pick) {
       //   case "S": return root->SevonTestStatisticsFaster(cases,pp,maxk,CC);
-    case "A": return root->RecurseTestNodes(cases,pp,maxk,CC,AbsSevonStat);
-    case "Q": return root->RecurseTestNodes(cases,pp,maxk,CC,SqSevonStat);
-    case "G": return root->RecurseTestNodes(cases,pp,maxk,CC,GStat);
-    case "P": return root->RecurseTestNodes(cases,pp,maxk,CC,LogP);
+    case 'A': return root->RecurseTestNodes(cases,pp,maxk,CC,AbsSevonStat);
+    case 'Q': return root->RecurseTestNodes(cases,pp,maxk,CC,SqSevonStat);
+    case 'G': return root->RecurseTestNodes(cases,pp,maxk,CC,GStat);
+    case 'P': return root->RecurseTestNodes(cases,pp,maxk,CC,LogP);
     default: 
       std::ostringstream oss;
       oss << "The statistic given by "" << pick << "" is not supported yet in getNodes\n";
@@ -290,12 +287,11 @@ private:
   binode *root;                             /// The root of the tree
   std::list<binode *> leaves;               /// A list of leaves
   std::list<binode *> internal;             /// A list of internal nodes
-  T **haps;                                 /// A pointer to a matrix of the data
+  IntegerMatrix haps;                       /// A pointer to a matrix of the data
   int samples, nSNP;                        /// the number of samples and SNPs
 };
 
-template <typename T>
-void splitter<T>::apesplit(int *edges, int *ncc, int *cases,int nc)
+void splitter::apesplit(int *edges, int *ncc, int *cases,int nc)
   {
     int pos=nleaves();
     vector<pair<int,int> > e;
@@ -312,14 +308,13 @@ void splitter<T>::apesplit(int *edges, int *ncc, int *cases,int nc)
     assert(pos==lab.size());
     for (size_t i=0;i<lab.size();i++) {
       int n=lab[i].size();
-      ncc[i]=count_intersection(lab[i],cases,nc);
+      ncc[i]=count_intersection(lab[i], cases, nc);
       ncc[start+i] = ncc[i];
     }
   }
 /** get edges counts and positions for a split tree                        */
 
-template <typename T>
-void splitter<T>::edges_positions_counts(int *edge1, int *edge2, int *count, int *position, int end_pos)
+void splitter::edges_positions_counts(int *edge1, int *edge2, int *count, int *position, int end_pos)
 {
   int pos = nleaves();
   
@@ -339,13 +334,12 @@ void splitter<T>::edges_positions_counts(int *edge1, int *edge2, int *count, int
 
 /** Get the number of cases and controls at the nodes - this is written as 
  * to be used by the R interface   */
-template <typename T>
-void splitter<T>::getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal) 
+void  splitter::getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal) 
   {
     NLRIterator<binode> ii(root);
     int count=0;
     while (!ii.isend()) {
-      ncc[count]=count_intersection((*ii)->labels,cases,nc);
+      ncc[count]=count_intersection((*ii)->labels, cases, nc);
       ncc[ninternal+count] = (*ii)->labels.size()-ncc[count];
       count++;
       ii.nextInternal();
@@ -353,8 +347,7 @@ void splitter<T>::getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal
   }
 /** Geta vector of node labels - this is written as 
  * to be used by the R interface so is in ape order  */
-template <typename T>
-void splitter<T>::getNodesLabels(std::vector<std::vector<int> > &labs) 
+void splitter::getNodesLabels(std::vector<std::vector<int> > &labs) 
   {
     NLRIterator<binode> ii(root);
     while (!ii.isend()) {
@@ -365,8 +358,7 @@ void splitter<T>::getNodesLabels(std::vector<std::vector<int> > &labs)
   
   /** Get a vector of positions - this is written as 
  * to be used by the R interface so is in ape order  */
-template <typename T>
-void splitter<T>::getNodesPositions(std::vector<int> &pos) 
+void splitter::getNodesPositions(std::vector<int> &pos) 
   {
     NLRIterator<binode> ii(root);
     while (!ii.isend()) {
@@ -380,14 +372,13 @@ void splitter<T>::getNodesPositions(std::vector<int> &pos)
 
 /** Get the number of cases and controls at the leaves - this should be in 
  * lexical search order */
-template <typename T>
-void splitter<T>::getCaseControlLeaves(IntegerMatrix &ncc, std::vector<int> &cases) 
+void splitter::getCaseControlLeaves(IntegerMatrix &ncc, std::vector<int> &cases) 
   {
     NLRIterator<binode> ii(root);
     ii.nextLeaf();   // the root can never be a leaf
     int count=0;
     while (!ii.isend()) {
-      ncc(count, 0) = count_intersection((*ii)->labels,cases);
+      ncc(count, 0) = count_intersection((*ii)->labels, cases);
       ncc(count, 1) = (*ii)->labels.size()-ncc(count, 0);
       count++;
       ii.nextLeaf();
@@ -401,8 +392,7 @@ void splitter<T>::getCaseControlLeaves(IntegerMatrix &ncc, std::vector<int> &cas
  *
  * CentrePos is the position of the node above that causes this split
  */
-template <typename T>
-void splitter<T>::getLengths(int CentrePos,int *posLRnode, int *posLRtip) 
+void splitter::getLengths(int CentrePos,int *posLRnode, int *posLRtip) 
   {
     NLRIterator<binode> ii(root);
     int countNodes=0,countTips=0;
@@ -419,9 +409,9 @@ void splitter<T>::getLengths(int CentrePos,int *posLRnode, int *posLRtip)
         std::vector<int> &labs=(*ii)->labels;
         // find the maximum value to the left that is shared
         for (Left=CentrePos;Left>=0;Left--) {
-          int MatchSNP=haps[labs[0]][Left];
+          int MatchSNP=haps(labs[0], Left);
           for (jj=1;jj<labs.size();jj++) {
-            if (haps[labs[jj]][Left]!=MatchSNP) break;
+            if (haps(labs[jj], Left)!=MatchSNP) break;
           }
           // we we have reached the end of labels and there was no split
           // then continue - otherwise break
@@ -429,9 +419,9 @@ void splitter<T>::getLengths(int CentrePos,int *posLRnode, int *posLRtip)
         }
         // Left should hold the maximum split to the left
         for (  Right=CentrePos;Right<nSNP;Right++) {
-          int MatchSNP=haps[labs[0]][Right];
+          int MatchSNP=haps(labs[0], Right);
           for (jj=1;jj<labs.size();jj++) {
-            if (haps[labs[jj]][Right]!=MatchSNP) break;
+            if (haps(labs[jj], Right) != MatchSNP) break;
           }
           if (jj!=labs.size()) break;
         }
@@ -449,8 +439,7 @@ void splitter<T>::getLengths(int CentrePos,int *posLRnode, int *posLRtip)
     }
   }
 
-template <typename T>
-void splitter<T>::getTipLengths(int StartingPoint, IntegerMatrix &posLRtip) 
+void splitter::getTipLengths(int StartingPoint, IntegerMatrix &posLRtip) 
 {
   NLRIterator<binode> ii(root);
   ii.nextLeaf();
@@ -468,9 +457,9 @@ void splitter<T>::getTipLengths(int StartingPoint, IntegerMatrix &posLRtip)
       std::vector<int> &labs=(*ii)->labels;
       // find the maximum value to the left that is shared
       for (Left=StartingPoint;Left>=0;Left--) {
-        int MatchSNP=haps[labs[0]][Left];
+        int MatchSNP=haps(labs[0], Left);
         for (jj=1;jj<labs.size();jj++) {
-          if (haps[labs[jj]][Left]!=MatchSNP) break;
+          if (haps(labs[jj], Left) != MatchSNP) break;
         }
         // we we have reached the end of labels and there was no split
         // then continue - otherwise break
@@ -478,9 +467,9 @@ void splitter<T>::getTipLengths(int StartingPoint, IntegerMatrix &posLRtip)
       }
       // Left should hold the maximum split to the left
       for (  Right=StartingPoint;Right<nSNP;Right++) {
-        int MatchSNP=haps[labs[0]][Right];
+        int MatchSNP=haps(labs[0], Right);
         for (jj=1;jj<labs.size();jj++) {
-          if (haps[labs[jj]][Right]!=MatchSNP) break;
+          if (haps(labs[jj], Right)!=MatchSNP) break;
         }
         if (jj!=labs.size()) break;
       }
@@ -497,17 +486,16 @@ void splitter<T>::getTipLengths(int StartingPoint, IntegerMatrix &posLRtip)
  * 
  * Note that the Left branch is always SNP[position] = 0
  */
-template <typename T>
-bool splitter<T>::split(int position) {
+bool splitter::split(int position) {
   bool change=false;
   list<binode *>::iterator ii=leaves.begin();
   std::list<binode *> toadd;
   while (ii!=leaves.end()) {
     if ((*ii)->labels.size()>1) {
-      if (!SNPmatch(haps,(*ii)->labels,position)) {
+      if (!SNPmatch(haps, (*ii)->labels, position)) {
         vector< vector<int> > lab(2);
         for (size_t jj=0;jj<(*ii)->labels.size();jj++) {
-          lab[haps[(*ii)->labels[jj]][position]].push_back((*ii)->labels[jj]);
+          lab[haps((*ii)->labels[jj], position)].push_back((*ii)->labels[jj]);
         }
         (*ii)->left=new binode(lab[0], *ii);
         (*ii)->right=new binode(lab[1], *ii);
@@ -525,8 +513,7 @@ bool splitter<T>::split(int position) {
 }
 /** Function to split the all nodes with >1  
   repeated use of this will produce full splits   */
-template <typename T>
-bool splitter<T>::fullsplit() {
+bool splitter::fullsplit() {
   bool change=false;
   list<binode *>::iterator ii=leaves.begin();
   std::list<binode *> toadd;
@@ -551,12 +538,11 @@ bool splitter<T>::fullsplit() {
   return change;
 }
 /** Do all the SNPs at position col for rows rows match?                         */
-template <typename T> 
-bool SNPmatch( T **hap, const vector<int> &rows, int col) 
+bool SNPmatch(const IntegerMatrix &hap, const vector<int> &rows, int col) 
 {
-  int SNP=hap[rows[0]][col];
+  int SNP = hap(rows[0], col);
   for (size_t j=0;j<rows.size();j++) 
-    if (hap[rows[j]][col]!=SNP) return false;
+    if (hap(rows[j], col) != SNP) return false;
   return true;
 } 
 /** Are any of the labels not cases?                                             */
@@ -585,16 +571,15 @@ bool mismatch(vector<T> &labels, T *cases, int nc)
 template<typename T>
 bool mismatch2(vector<T> &labels, T *cases, int nc)
 {
-  int count=count_intersection(labels,cases,nc);
+  int count=count_intersection(labels, cases, nc);
   if (count==static_cast<int>(labels.size())) return false;
   else if (count==0) return false;
   return true;
 }
 /** Note that both of these should be sorted                               */
-template<typename T>
-int count_intersection(vector<T> &a, vector<T> &b)
+int count_intersection(vector<int> &a, vector<int> &b)
 {
-  typename std::vector<T>::iterator al=a.end(),bl=b.end(),ii=a.begin(),jj=b.begin();
+  typename std::vector<int>::iterator al=a.end(),bl=b.end(),ii=a.begin(),jj=b.begin();
   int count=0;
   while (ii!=al && jj!=bl) {
     if (*ii<*jj) ++ii;
@@ -608,11 +593,10 @@ int count_intersection(vector<T> &a, vector<T> &b)
   return count;
 } 
 /** Note that both of these should be sorted                               */
-template<typename T>
-  int count_intersection(vector<T> &a, T *cases, int nc)
+int count_intersection(vector<int> &a, int *cases, int nc)
 {
-  typename std::vector<T>::iterator al=a.end(),ii=a.begin();
-  T *jj=cases,*bl=cases+nc;
+  typename std::vector<int>::iterator al=a.end(),ii=a.begin();
+  int *jj=cases,*bl=cases+nc;
   int count=0;
   while (ii!=al && jj!=bl) {
     if (*ii<*jj) ++ii;
@@ -626,9 +610,8 @@ template<typename T>
   return count;
 }
 
-template <typename T>
- std::vector<std::pair<int,double> >
-  splitter<T>::maxLengths(int k, int nmax) {
+std::vector<std::pair<int,double> >
+  splitter::maxLengths(int k, int nmax) {
      std::vector<std::pair<int,double> > a;
      return a;	
   }

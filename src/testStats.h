@@ -1,6 +1,25 @@
 #ifndef TESTSTATS_H__
 #define TESTSTATS_H__
 
+
+#include <Rcpp.h>
+using namespace Rcpp;
+
+//two pass mean and variance calculation
+template <typename T>
+void avevar(const std::vector<T> &xx, double &mean, double &v) {
+  mean=std::accumulate(xx.begin(),xx.end(),0.0)/static_cast<double>(xx.size());
+  double ep=0.0,var=0.0;
+  for (size_t ii=0;ii<xx.size();ii++) {
+    double s=static_cast<double>(xx[ii])-mean;
+    ep+=s;
+    var+=s*s;
+  }
+  v = (var-ep*ep/static_cast<double>(xx.size()))/static_cast<double>(xx.size()-1);
+  
+}
+
+
 template <typename T>
 double GStat(T x, T n, double p)
 {

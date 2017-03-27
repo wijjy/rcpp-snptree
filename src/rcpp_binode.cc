@@ -1,4 +1,4 @@
-#include "binode.h"
+#include "rcpp_binode.h"
 
 inline int WithinCalculations(int L, int R,int dL,int dR)
 {
@@ -71,7 +71,7 @@ std::vector<double> binode::TreeDistanceStatistic(const std::vector<int> &Cases,
 
 std::pair<int,int> binode::RecurseLeftRightDistances(const std::vector<int> &Cases)
 {
-  distance=TNT::Array2D<int>(2,3);
+  IntegerMatrix distance(2,3);
 
   if (isleaf()) {
     localCC[0]=CountIntersection(Cases,labels);
@@ -85,10 +85,10 @@ std::pair<int,int> binode::RecurseLeftRightDistances(const std::vector<int> &Cas
     std::pair<int,int> leftDistance = left->RecurseLeftRightDistances(Cases);
     std::pair<int,int> rightDistance = right->RecurseLeftRightDistances(Cases);
 
-    distance[0][1] = leftDistance.first;
-    distance[1][1] = leftDistance.second;
-    distance[0][2] = rightDistance.first;
-    distance[1][2] = rightDistance.second;
+    distance(0,1) = leftDistance.first;
+    distance(1,1) = leftDistance.second;
+    distance(0,2) = rightDistance.first;
+    distance(1,2) = rightDistance.second;
     localCC[0]=left->localCC[0]+right->localCC[0];
     localCC[1]=left->localCC[1]+right->localCC[1];
 
