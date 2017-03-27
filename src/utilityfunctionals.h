@@ -1,1 +1,0 @@
-/home/nijw/git/ijw/utilityfunctionals.h
