@@ -18,9 +18,10 @@ using namespace Rcpp;
 
 // [[Rcpp::export]]
 SEXP  simple_split(IntegerMatrix d, IntegerVector positions) {
- 
+ Rprintf("%d %d\n", d.nrow(), d.ncol());
     splitter *s = new splitter(d);            // define the splitter object s
-    for (int i=0; i< positions.size(); i++) s->split(positions[i]);   // split at positions
+Rprintf("got ehr2");
+    for (int i=0; i< positions.size(); i++) s->split(positions[i]-1);   // split at positions
   
  
   Rcpp::XPtr< splitter > pt(s, true);
