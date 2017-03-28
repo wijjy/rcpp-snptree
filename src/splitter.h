@@ -23,7 +23,7 @@ bool mismatch(std::vector<T> &labels, T *cases, int nc);
 template<typename T>
 bool mismatch2(vector<T> &labels, T *cases, int nc);
 
-int count_intersection(vector<int> &a, vector<int> &b);
+int count_intersection(vector<int> &a, IntegerVector &b);
 /** Note that both of these should be sorted                               */
 int count_intersection(vector<int> &a, int *cases, int nc);
 
@@ -39,12 +39,19 @@ public:
     vector<int> a(haplotypes.nrow());
     for (int i=0; i<haplotypes.nrow(); i++) a[i]=i;
     leaves.push_back(new binode(a));
-    root=leaves.front();
+    root_=leaves.front();
+  }
+  binode *root() const {
+    return root_;
   }
   /** Return the number of leaves in a tree               */
   int nleaves() const {
     return leaves.size();
   }
+  /** calculate the top and bottom positions of each node 
+   * for drawing.  gap is in proportion to unity.  
+  */
+  void calculate_top_bottom(double gap);
   /** Split the haplotypes at a position                  */
   bool split(int position);
   /** Do some splits                                      */
@@ -85,10 +92,10 @@ public:
     avevar(qvals, meanvar[0], meanvar[1]);
     double sumx;
     switch(pick[0]) {
-    case 'Z': return root->RecurseZStat2(qvals, sumx, maxk, meanvar);
-    case 'A': return root->RecurseZStatA(qvals, sumx, maxk, meanvar);
-    case 'P': return root->RecurseZStatP(qvals, sumx, maxk, meanvar);
-    case 'N': return root->RecurseZStatN(qvals, sumx, maxk, meanvar);
+    case 'Z': return root_->RecurseZStat2(qvals, sumx, maxk, meanvar);
+    case 'A': return root_->RecurseZStatA(qvals, sumx, maxk, meanvar);
+    case 'P': return root_->RecurseZStatP(qvals, sumx, maxk, meanvar);
+    case 'N': return root_->RecurseZStatN(qvals, sumx, maxk, meanvar);
 
     default: 
       std::ostringstream oss;
@@ -101,14 +108,14 @@ public:
     double pp=cases.size()/static_cast<double>(samples);
     int CC[2],d[2];
     switch(pick[0]) {
-    case 'S': return root->SevonTestStatisticsFaster(cases,pp,maxk,CC);
-    case 'A': return root->RecurseTestStatistics(cases,pp,maxk,CC,AbsSevonStat);
-    case 'Q': return root->RecurseTestStatistics(cases,pp,maxk,CC,SqSevonStat);
-    case 'G': return root->RecurseTestStatistics(cases,pp,maxk,CC,GStat);
-    case 'N': return root->RecurseTestStatistics(cases,pp,maxk,CC,LogPNorm);   
-    case 'P': return root->RecurseTestStatistics(cases,pp,maxk,CC,LogP);
+    case 'S': return root_->SevonTestStatisticsFaster(cases,pp,maxk,CC);
+    case 'A': return root_->RecurseTestStatistics(cases,pp,maxk,CC,AbsSevonStat);
+    case 'Q': return root_->RecurseTestStatistics(cases,pp,maxk,CC,SqSevonStat);
+    case 'G': return root_->RecurseTestStatistics(cases,pp,maxk,CC,GStat);
+    case 'N': return root_->RecurseTestStatistics(cases,pp,maxk,CC,LogPNorm);   
+    case 'P': return root_->RecurseTestStatistics(cases,pp,maxk,CC,LogP);
     case 'C':  {
-      std::vector<int> tmp = root->RecurseCherries(cases);
+      std::vector<int> tmp = root_->RecurseCherries(cases);
       std::vector<double> res(8);
       res[0] = tmp[0]-tmp[1];
       res[1] = tmp[0]+tmp[2] - tmp[1];
@@ -116,12 +123,12 @@ public:
       res[3]=tmp[0];
       res[4]=tmp[1];
       res[5]=tmp[2];
-      res[6]=static_cast<double>(root->labels.size());      // total
+      res[6]=static_cast<double>(root_->labels.size());      // total
       res[7]=static_cast<double>(cases.size());             // ncases
       return res;
     }
     case 'H':  {
-      std::vector<double> tmp = root->RecurseSumHeight(cases,CC);
+      std::vector<double> tmp = root_->RecurseSumHeight(cases,CC);
       tmp[0] /= CC[0];
       tmp[1] /= CC[1]=CC[0];
       std::vector<double> res(4);
@@ -132,7 +139,7 @@ public:
       return res;
     }
     case 'T': {
-      std::vector<double> tmp = root->TreeDistanceStatistic(cases,CC,d);
+      std::vector<double> tmp = root_->TreeDistanceStatistic(cases,CC,d);
       //      std::cerr << tmp[0] << ' " << tmp[1] << ' " << tmp[2] << std::endl;
       std::vector<double> res(4);
       res[0] = tmp[2]/static_cast<double>(CC[1]) - tmp[0]/static_cast<double>(CC[0]);
@@ -146,12 +153,12 @@ public:
       return res;
     }
     case 't': {
-      root->RecurseLeftRightDistances(cases);
-      root->distance(0, 0) = 9999;
-      root->distance(0, 1) = 9999;
-      root->RecurseUpDistances();
+      root_->RecurseLeftRightDistances(cases);
+      root_->distance(0, 0) = 9999;
+      root_->distance(0, 1) = 9999;
+      root_->RecurseUpDistances();
       std::vector<double> tmp(6,0.0);
-      LRNIterator<binode> i(root);  
+      LRNIterator<binode> i(root_);  
 
       while (!i.isend()) {
 
@@ -171,8 +178,8 @@ public:
       }
       
       std::vector<double> res(6);
-      CC[0] = root->localCC[0];
-      CC[1] = root->localCC[1];
+      CC[0] = root_->localCC[0];
+      CC[1] = root_->localCC[1];
  
       res[0] =  (tmp[2]-tmp[0])/static_cast<double>(CC[0]);                  // clustering  of cases
       res[1] =  (tmp[3]-tmp[1])/static_cast<double>(CC[1]-CC[0]);            // clustering of controls
@@ -200,11 +207,11 @@ public:
     double pp=cases.size()/static_cast<double>(samples);
     int CC[2];
     switch(pick) {
-      //   case "S": return root->SevonTestStatisticsFaster(cases,pp,maxk,CC);
-    case 'A': return root->RecurseTestNodes(cases,pp,maxk,CC,AbsSevonStat);
-    case 'Q': return root->RecurseTestNodes(cases,pp,maxk,CC,SqSevonStat);
-    case 'G': return root->RecurseTestNodes(cases,pp,maxk,CC,GStat);
-    case 'P': return root->RecurseTestNodes(cases,pp,maxk,CC,LogP);
+      //   case "S": return root_->SevonTestStatisticsFaster(cases,pp,maxk,CC);
+    case 'A': return root_->RecurseTestNodes(cases,pp,maxk,CC,AbsSevonStat);
+    case 'Q': return root_->RecurseTestNodes(cases,pp,maxk,CC,SqSevonStat);
+    case 'G': return root_->RecurseTestNodes(cases,pp,maxk,CC,GStat);
+    case 'P': return root_->RecurseTestNodes(cases,pp,maxk,CC,LogP);
     default: 
       std::ostringstream oss;
       oss << "The statistic given by "" << pick << "" is not supported yet in getNodes\n";
@@ -217,7 +224,7 @@ public:
   std::vector<double> recurseSevonTestStatistic( const vector<int> &cases,int maxk=5) {
     double pp=cases.size()/static_cast<double>(samples);
     int CC[2];
-    return root->SevonTestStatisticsFaster(cases,pp,maxk,CC);
+    return root_->SevonTestStatisticsFaster(cases,pp,maxk,CC);
   }
  
   /** A function to get the edges for the tree in a format that 
@@ -225,7 +232,7 @@ public:
    * be reworked using my iterator for stepping through trees!
    */
   void apesplit(vector<pair<int,int> >  &e, vector<vector<int> > &lab) {
-    root->recurseApeSplit(e,lab,nleaves()+1);
+    root_->recurseApeSplit(e,lab,nleaves()+1);
   }
   /** An alternative apesplit that gets the numbers of cases and controls
    * for all terminal nodes                                               */
@@ -236,7 +243,7 @@ public:
   /** Get the numbers of cases and controls at the internal nodes and the 
       leaves - in lexical order */
   void getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal);
-  void getCaseControlLeaves(IntegerMatrix &ncc,  std::vector<int> &cases);
+  void getCaseControlLeaves(IntegerMatrix &ncc,  IntegerVector &cases);
   /** Get the index of splits for each node - that is which of the SNPs the node was split on  */
   void getNodesPositions(std::vector<int> &pos);
   /** Get the labels at internal nodes in ape format */
@@ -249,7 +256,7 @@ public:
   std::vector<binode *> GetLeaves() {
     std::vector<binode *> xx;
     xx.reserve(nleaves());                 // reserve the correct length
-    NLRIterator<binode> ii(root); 
+    NLRIterator<binode> ii(root_); 
     ii.nextLeaf();                         // get the first leaf
     while (!ii.isend()) {
       xx.push_back(*ii);
@@ -261,7 +268,7 @@ public:
   std::vector<binode *> GetLRNInternal() {
     std::vector<binode *> xx;
     xx.reserve(nleaves()-1);                 // reserve the correct length
-    LRNIterator<binode> ii(root); 
+    LRNIterator<binode> ii(root_); 
     ii.nextInternal();
     while (!ii.isend()) {
       xx.push_back(*ii);
@@ -273,7 +280,7 @@ public:
   std::vector<binode *> GetNLRInternal() {
     std::vector<binode *> xx;
     xx.reserve(nleaves()-1);                 // reserve the correct length
-    NLRIterator<binode> ii(root); 
+    NLRIterator<binode> ii(root_); 
     while (!ii.isend()) {
       xx.push_back(*ii);
       ii.nextInternal();
@@ -284,7 +291,7 @@ public:
   std::vector<std::pair<int,double> > maxLengths(int k, int nmax); 
   
 private:
-  binode *root;                             /// The root of the tree
+  binode *root_;                            /// The root of the tree
   std::list<binode *> leaves;               /// A list of leaves
   std::list<binode *> internal;             /// A list of internal nodes
   IntegerMatrix haps;                       /// A pointer to a matrix of the data
@@ -296,7 +303,7 @@ void splitter::apesplit(int *edges, int *ncc, int *cases,int nc)
     int pos=nleaves();
     vector<pair<int,int> > e;
     vector<vector<int> > lab; 
-    root->recurseApeSplit(e,lab,pos+1);
+    root_->recurseApeSplit(e,lab,pos+1);
 
     int start=2*(pos-1);
     assert(start==e.size());
@@ -321,7 +328,7 @@ void splitter::edges_positions_counts(int *edge1, int *edge2, int *count, int *p
   std::vector<std::vector<int> > yyy;
   int next_leaf=1;
  
-  root->recurse_edge_count_position(yyy, pos+1, next_leaf, end_pos);
+  root_->recurse_edge_count_position(yyy, pos+1, next_leaf, end_pos);
   std::cerr << "size of yyy: " << yyy.size() << std::endl;
   assert(yy.size()==2*(pos-1));
   for (size_t ii=0; ii<yyy.size();ii++) {
@@ -336,7 +343,7 @@ void splitter::edges_positions_counts(int *edge1, int *edge2, int *count, int *p
  * to be used by the R interface   */
 void  splitter::getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal) 
   {
-    NLRIterator<binode> ii(root);
+    NLRIterator<binode> ii(root_);
     int count=0;
     while (!ii.isend()) {
       ncc[count]=count_intersection((*ii)->labels, cases, nc);
@@ -349,7 +356,7 @@ void  splitter::getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal)
  * to be used by the R interface so is in ape order  */
 void splitter::getNodesLabels(std::vector<std::vector<int> > &labs) 
   {
-    NLRIterator<binode> ii(root);
+    NLRIterator<binode> ii(root_);
     while (!ii.isend()) {
       labs.push_back((*ii)->labels);
       ii.nextInternal();
@@ -360,7 +367,7 @@ void splitter::getNodesLabels(std::vector<std::vector<int> > &labs)
  * to be used by the R interface so is in ape order  */
 void splitter::getNodesPositions(std::vector<int> &pos) 
   {
-    NLRIterator<binode> ii(root);
+    NLRIterator<binode> ii(root_);
     while (!ii.isend()) {
       pos.push_back((*ii)->position);
       ii.nextInternal();
@@ -372,9 +379,9 @@ void splitter::getNodesPositions(std::vector<int> &pos)
 
 /** Get the number of cases and controls at the leaves - this should be in 
  * lexical search order */
-void splitter::getCaseControlLeaves(IntegerMatrix &ncc, std::vector<int> &cases) 
+void splitter::getCaseControlLeaves(IntegerMatrix &ncc, IntegerVector &cases) 
   {
-    NLRIterator<binode> ii(root);
+    NLRIterator<binode> ii(root_);
     ii.nextLeaf();   // the root can never be a leaf
     int count=0;
     while (!ii.isend()) {
@@ -394,7 +401,7 @@ void splitter::getCaseControlLeaves(IntegerMatrix &ncc, std::vector<int> &cases)
  */
 void splitter::getLengths(int CentrePos,int *posLRnode, int *posLRtip) 
   {
-    NLRIterator<binode> ii(root);
+    NLRIterator<binode> ii(root_);
     int countNodes=0,countTips=0;
     while (!ii.isend()) {
       if ((*ii)->labels.size()==1) {  
@@ -441,7 +448,7 @@ void splitter::getLengths(int CentrePos,int *posLRnode, int *posLRtip)
 
 void splitter::getTipLengths(int StartingPoint, IntegerMatrix &posLRtip) 
 {
-  NLRIterator<binode> ii(root);
+  NLRIterator<binode> ii(root_);
   ii.nextLeaf();
   int countTip=0;
   while (!ii.isend()) {
@@ -577,9 +584,10 @@ bool mismatch2(vector<T> &labels, T *cases, int nc)
   return true;
 }
 /** Note that both of these should be sorted                               */
-int count_intersection(vector<int> &a, vector<int> &b)
+int count_intersection(vector<int> &a, IntegerVector &b)
 {
-  typename std::vector<int>::iterator al=a.end(),bl=b.end(),ii=a.begin(),jj=b.begin();
+  typename std::vector<int>::iterator al=a.end(),ii=a.begin();
+  IntegerVector::iterator bl=b.end(),jj=b.begin();
   int count=0;
   while (ii!=al && jj!=bl) {
     if (*ii<*jj) ++ii;
@@ -615,5 +623,24 @@ std::vector<std::pair<int,double> >
      std::vector<std::pair<int,double> > a;
      return a;	
   }
+  
+  /** calculate the top and bottom positions of each node 
+   * for drawing.  gap is in proportion to unity.  
+   */
+  void splitter::calculate_top_bottom(double gap) {
+    NLRIterator<binode> ii(root());
+    ii.nextLeaf();   // the root can never be a leaf
+    std::pair<double, double> last(0.0, (*ii)->labels.size());
+    ii.nextLeaf();
+    while (!ii.isend()) {
+      (*ii)->range.first = gap + last.second;
+      (*ii)->range.second = (*ii)->range.first + (*ii)->labels.size();
+      last = (*ii)->range;
+      ii.nextLeaf();
+    }
+    root_->recurse_calculate_top_bottom();
+  }
+
+
   
 #endif

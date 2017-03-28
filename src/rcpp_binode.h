@@ -52,7 +52,7 @@ public:
     std::copy(labels.begin(),labels.end(),std::ostream_iterator<int>(o," "));
     return o;
   }
-
+  std::pair<double, double> recurse_calculate_top_bottom();
   std::pair<int,int> RecurseLeftRightDistances(const std::vector<int> &Cases);
   std::vector<int>  RecurseCherries(const std::vector<int> &Cases);
   std::vector<double>  RecurseSumHeight(const std::vector<int> &Cases,int CC[2]);
@@ -525,8 +525,10 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
     right->distance(1, 0) = std::min(distance(1, 0), distance(1, 1))+1;
     if (!right->isleaf())   right->RecurseUpDistances();
   }
+  /** calculate the tops and bottoms of the nodes relative to the leaves, 
+   * which have already been calculated                                   */
 
-
+  
 public:
   /** The data                                                                        */
   binode *left;
@@ -536,6 +538,7 @@ public:
   std::vector<int> labels;
   IntegerMatrix distance;   /** Distances for tree distance calculations    */
   int localCC[2];
+  std::pair<double, double> range;
 };
 
 
@@ -666,6 +669,5 @@ private:
   T* current;
   stack<std::pair<T *, bool> > visited;  /** which nodes have already been visited */
 };
-
 
 #endif
