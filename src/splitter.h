@@ -331,7 +331,6 @@ void splitter::apesplit(int *edges, int *ncc, int *cases,int nc)
     start=pos;
     assert(pos==lab.size());
     for (size_t i=0;i<lab.size();i++) {
-      int n=lab[i].size();
       ncc[i]=count_intersection(lab[i], cases, nc);
       ncc[start+i] = ncc[i];
     }
