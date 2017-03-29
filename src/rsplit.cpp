@@ -26,7 +26,7 @@ SEXP  simple_split(IntegerMatrix d, IntegerVector positions) {
 
 
 // [[Rcpp::export]]
-int  nleaves(SEXP ptr) {
+int nleaves(SEXP ptr) {
   Rcpp::XPtr< splitter > s(ptr);
   return s->nleaves();
 }
@@ -74,7 +74,7 @@ NumericMatrix  leaf_positions(SEXP ptr, double gap=1) {
 }
 
 // [[Rcpp::export]]
-NumericMatrix  node_positions(SEXP ptr, double gap=1) {
+NumericMatrix node_positions(SEXP ptr, double gap=1) {
   Rcpp::XPtr< splitter > s(ptr);
   int leaves = s->nleaves();
   NumericMatrix ypositions(leaves);
@@ -117,19 +117,15 @@ NumericMatrix  stumps(SEXP ptr, int pos1, int pos2, double gap=1) {
 // [[Rcpp::export]]
 NumericMatrix  get_coordinates(SEXP ptr, double gap=1) {
   Rcpp::XPtr< splitter > s(ptr);
+  s->calculate_top_bottom(gap);   // gets the tops and bottoms 
+                                  // for the leaves and the rest of the tree
   int leaves = s->nleaves();
-  s->calculate_top_bottom(gap);   // gets the tops and bottoms for the and the rest of the tree
-  
-  NLRIterator<binode> ii(s->root());
-  ii.nextLeaf();   // the root can never be a leaf
-  while (!ii.isend()) {
-    Rprintf("range for leaf = (%g, %g)\n", (*ii)->range.first, (*ii)->range.second);
-    ii.nextLeaf();
-  }
-  // have the tops and bottoms for all nobes, now just have to take the coordinates in order.
   NumericMatrix coords(2*leaves+3*(leaves-1), 3);
   
   s->get_coordinates(coords);
+  for (int i=0; i<coords.nrow(); i++) {
+    coords(i, 0) +=1; 
+  }
   
   return coords;
 }

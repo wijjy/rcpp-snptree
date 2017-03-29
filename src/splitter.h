@@ -35,7 +35,9 @@ class splitter {
 public:
   /** Constructor for the splitter class                 */
   splitter( IntegerMatrix haplotypes) 
-    :haps(haplotypes)    ,samples(haplotypes.nrow())  ,nSNP(haplotypes.ncol()) {
+    :haps(haplotypes),
+     samples(haplotypes.nrow()),
+     nSNP(haplotypes.ncol()) {
     vector<int> a(haplotypes.nrow());
     for (int i=0; i<haplotypes.nrow(); i++) a[i]=i;
     leaves.push_back(new binode(a));
@@ -76,11 +78,7 @@ public:
     root_->left->recursively_get_coords(coords, index);
     coords(index, 0) = root_->position;
     coords(index, 1) = root_->range.first+(root_->range.second-root_->range.first)*root_->left->labels.size()/static_cast<double>(root_->labels.size());
-<<<<<<< HEAD
     coords(index++, 2) = 0.0;//0.5;
-=======
-    coords(index++, 2) = 0.5;
->>>>>>> febbb1491640ca9feb6acf9d36eb737817e4dac7
     root()->right->recursively_get_coords(coords, index);
     coords(index, 0) = root()->position;
     coords(index, 1) = root()->range.second;
@@ -524,7 +522,7 @@ bool splitter::split(int position) {
         for (size_t jj=0;jj<(*ii)->labels.size();jj++) {
           lab[haps((*ii)->labels[jj], position)].push_back((*ii)->labels[jj]);
         }
-        (*ii)->left=new binode(lab[0], *ii);
+        (*ii)->left =new binode(lab[0], *ii);
         (*ii)->right=new binode(lab[1], *ii);
         (*ii)->position=position;
         toadd.push_back((*ii)->left);
@@ -535,7 +533,7 @@ bool splitter::split(int position) {
       } else ii++;
     } else ii++;
   }
-  leaves.splice(leaves.begin(),toadd);
+  leaves.splice(leaves.begin(), toadd);
   return change;
 }
 /** Function to split the all nodes with >1  
