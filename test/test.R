@@ -1,3 +1,4 @@
+library(rcppsnptree)
 data("snptreeExample")
 a <- simple_split(haps, position)
 nleaves(a)
@@ -6,58 +7,29 @@ case_control_leaves(a,cases)
 leaves <- leaf_count(a)
 sum(leaves)
 res <- get_coordinates(a, gap=40) 
+table(res)
 res[res[,1]==-1,1] <- max(res[,1])+1 
 plot(range(res[,1]), range(res[,2]), type="n", xlab="", ylab="", axes=TRUE)
 xspline(res[,1], res[,2], shape=res[,3], open=FALSE, col="lightgrey", border=FALSE)
 
 
 
-
-library(ARG)
-b <- simARG(200, sites=1000, rec=0.01)
-b <- mutate(b, var=100)
-
-split_b <- simple_split(b$haplotype, 1:10)
-nleaves(split_b)
-cases <- 1:100
-case_control_leaves(split_b, cases)
-leaves <- leaf_count(split_b)
-sum(leaves)
-
-
-res <- get_coordinates(split_b, gap=10) 
-res[res[,1]==-1,1] <- max(res[,1])+1 
-
-plot(range(res[,1]), range(res[,2]), type="n", xlab="", ylab="", axes=TRUE)
-xspline(res[,1], res[,2], shape=res[,3], open=FALSE, col="lightgrey", border=FALSE)
+test_plot <- function(ss, rec, var, centre, nleft, nright, 
+                      gap=10, realpositions=TRUE, mark_variants=FALSE) {
+  library(ARG)
+  b <- simARG(ss, sites=10*var, rec=rec)
+  b <- mutate(b, var=var)
+  bifurcation_plot(b$hap, b$position, centre, nleft, nright, gap, realpositions=realpositions)
+  #ss=100;rec=0.01;var=100;centre=50;nleft=10;nright=10;gap=10
+}
+ 
 
 
 
-split_right <- simple_split(b$haplotype, 51:60)
-coordinates_right <- get_coordinates(split_right, gap=10) 
-coordinates_right[coordinates_right[,1]==-1,1] <- max(coordinates_right[,1])+1 
+test_plot(100, rec= 0.01,var=100, centre=50, nleft=30, nright=30, gap=10)
+test_plot(100, rec= 0.001,var=100, centre=51, nleft=50, nright=50, gap=10, realpositions = FALSE)
 
-split_left <- simple_split(b$haplotype, 50:40)
-coordinates_left <- get_coordinates(split_left, gap=10)
-coordinates_left[coordinates_left[,1]==-1,1] <- min(coordinates_left[coordinates_left[,1]!=-1,1])-1 
-
-height_diff <- coordinates_left[1, 2] - coordinates_right[1, 2]
-coordinates_right[,2] <- coordinates_right[,2]+height_diff
-
-x <- c(max(coordinates_left[,1])-0.02, min(coordinates_right[,1])+0.02)
-x <- rep(x, each=2)
-y <- c(coordinates_left[1,2], coordinates_right[nrow(coordinates_right),2])
-y <- c(y, rev(y))
-
-plot(range(c(coordinates_left[,1], coordinates_right[,1])), 
-     range(c(coordinates_left[,2], coordinates_right[,2])), 
-           type="n", xlab="", ylab="", axes=TRUE)
-xspline(coordinates_left[,1], coordinates_left[,2], shape=coordinates_left[,3], open=FALSE, col="lightgrey", border=FALSE)
-
-xspline(coordinates_right[,1], coordinates_right[,2], shape=coordinates_right[,3], open=FALSE, col="lightgrey", border=FALSE)
-xspline(x, y, shape=0, open=FALSE, col="lightgrey", border="lightgrey")
-
-
+test_plot(100, rec= 0.01,var=100, centre=50, nleft=30, nright=30, gap=2)
 
 
 plot_stump <- function(x1, x2, y1, h1, y2, h2, gap) {
