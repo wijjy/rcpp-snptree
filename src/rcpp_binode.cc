@@ -176,12 +176,16 @@ void binode::recursively_get_coords(NumericMatrix &coords, int &index) {
     coords(index, 1) = range.second;
     coords(index++, 2) = 0;
   } else {
-    coords(index++, 2) = -0.5;  // allow curvature through the point
+    coords(index++, 2) = 0;//-0.5;  // allow curvature through the point
     left->recursively_get_coords(coords, index);
     // now to draw the joining point at this node
     coords(index, 0) = position;
     coords(index, 1) = range.first+(range.second-range.first)*left->labels.size()/static_cast<double>(labels.size());
+<<<<<<< HEAD
+    coords(index++, 2) = 0;//0.5;
+=======
     coords(index++, 2) = 0.5;
+>>>>>>> febbb1491640ca9feb6acf9d36eb737817e4dac7
     right->recursively_get_coords(coords, index);
     //
     coords(index, 0) = position;

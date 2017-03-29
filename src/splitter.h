@@ -76,7 +76,11 @@ public:
     root_->left->recursively_get_coords(coords, index);
     coords(index, 0) = root_->position;
     coords(index, 1) = root_->range.first+(root_->range.second-root_->range.first)*root_->left->labels.size()/static_cast<double>(root_->labels.size());
+<<<<<<< HEAD
+    coords(index++, 2) = 0.0;//0.5;
+=======
     coords(index++, 2) = 0.5;
+>>>>>>> febbb1491640ca9feb6acf9d36eb737817e4dac7
     root()->right->recursively_get_coords(coords, index);
     coords(index, 0) = root()->position;
     coords(index, 1) = root()->range.second;
@@ -602,7 +606,7 @@ bool mismatch2(vector<T> &labels, T *cases, int nc)
 /** Note that both of these should be sorted                               */
 int count_intersection(vector<int> &a, IntegerVector &b)
 {
-  typename std::vector<int>::iterator al=a.end(),ii=a.begin();
+  std::vector<int>::iterator al=a.end(),ii=a.begin();
   IntegerVector::iterator bl=b.end(),jj=b.begin();
   int count=0;
   while (ii!=al && jj!=bl) {
@@ -619,7 +623,7 @@ int count_intersection(vector<int> &a, IntegerVector &b)
 /** Note that both of these should be sorted                               */
 int count_intersection(vector<int> &a, int *cases, int nc)
 {
-  typename std::vector<int>::iterator al=a.end(),ii=a.begin();
+  std::vector<int>::iterator al=a.end(),ii=a.begin();
   int *jj=cases,*bl=cases+nc;
   int count=0;
   while (ii!=al && jj!=bl) {
