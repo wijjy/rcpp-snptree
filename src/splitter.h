@@ -66,12 +66,21 @@ public:
       return o;
   }
   /** get the coordinates for a bifurcation tree */
-  void get_coords(NumericMatrix coords) {
-    coords(0,0) = 0;
-    coords(0,1) = root_->range.first;
-    coords(0,2) = 0;
-    int index=0;
-    root_->recursively_get_coords(coords, index);
+  void get_coordinates(NumericMatrix coords) {
+   // Rprintf(" root position = %d\n", root()->position);
+  //  Rprintf(" root range is (%g, %g)\n", root()->range.first, root()->range.second);
+    coords(0, 0) = root_->position;
+    coords(0, 1) = root_->range.first;
+    coords(0, 2) = 0;  // squared off at the root
+    int index=1;
+    root_->left->recursively_get_coords(coords, index);
+    coords(index, 0) = root_->position;
+    coords(index, 1) = root_->range.first+(root_->range.second-root_->range.first)*root_->left->labels.size()/static_cast<double>(root_->labels.size());
+    coords(index++, 2) = 0.0;//0.5;
+    root()->right->recursively_get_coords(coords, index);
+    coords(index, 0) = root()->position;
+    coords(index, 1) = root()->range.second;
+    coords(index, 2) = 0;
   }
   /** The first test statistic                            */
   double testStat1(vector<int> &cases) {
@@ -594,7 +603,7 @@ bool mismatch2(vector<T> &labels, T *cases, int nc)
 /** Note that both of these should be sorted                               */
 int count_intersection(vector<int> &a, IntegerVector &b)
 {
-  typename std::vector<int>::iterator al=a.end(),ii=a.begin();
+  std::vector<int>::iterator al=a.end(),ii=a.begin();
   IntegerVector::iterator bl=b.end(),jj=b.begin();
   int count=0;
   while (ii!=al && jj!=bl) {
@@ -611,7 +620,7 @@ int count_intersection(vector<int> &a, IntegerVector &b)
 /** Note that both of these should be sorted                               */
 int count_intersection(vector<int> &a, int *cases, int nc)
 {
-  typename std::vector<int>::iterator al=a.end(),ii=a.begin();
+  std::vector<int>::iterator al=a.end(),ii=a.begin();
   int *jj=cases,*bl=cases+nc;
   int count=0;
   while (ii!=al && jj!=bl) {
@@ -639,6 +648,7 @@ std::vector<std::pair<int,double> >
     NLRIterator<binode> ii(root());
     ii.nextLeaf();   // the root can never be a leaf
     std::pair<double, double> last(0.0, (*ii)->labels.size());
+    (*ii)->range = last;
     ii.nextLeaf();
     while (!ii.isend()) {
       (*ii)->range.first = gap + last.second;
@@ -646,6 +656,7 @@ std::vector<std::pair<int,double> >
       last = (*ii)->range;
       ii.nextLeaf();
     }
+    // now recurse to get the rest of the nodes
     root_->recurse_calculate_top_bottom();
   }
 

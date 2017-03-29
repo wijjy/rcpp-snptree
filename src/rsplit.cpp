@@ -118,9 +118,16 @@ NumericMatrix  stumps(SEXP ptr, int pos1, int pos2, double gap=1) {
 NumericMatrix  get_coordinates(SEXP ptr, double gap=1) {
   Rcpp::XPtr< splitter > s(ptr);
   int leaves = s->nleaves();
-  s->calculate_top_bottom(gap);
+  s->calculate_top_bottom(gap);   // gets the tops and bottoms for the and the rest of the tree
+  
+  NLRIterator<binode> ii(s->root());
+  ii.nextLeaf();   // the root can never be a leaf
+  while (!ii.isend()) {
+    Rprintf("range for leaf = (%g, %g)\n", (*ii)->range.first, (*ii)->range.second);
+    ii.nextLeaf();
+  }
   // have the tops and bottoms for all nobes, now just have to take the coordinates in order.
-  NumericMatrix coords(2*leaves+3*(leaves-1)+1, 3);
+  NumericMatrix coords(2*leaves+3*(leaves-1), 3);
   
   s->get_coordinates(coords);
   

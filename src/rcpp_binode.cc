@@ -144,6 +144,7 @@ std::vector<double>  binode::RecurseSumHeight(const std::vector<int> &Cases,int 
 
 
 std::pair<double, double> binode::recurse_calculate_top_bottom()  {
+  
   std::pair<double, double> rangeleft, rangeright;
   
   if (left->isleaf()) {
@@ -151,34 +152,37 @@ std::pair<double, double> binode::recurse_calculate_top_bottom()  {
   } else {
     rangeleft = left->recurse_calculate_top_bottom();
   }
+  
   if (right->isleaf()) {
     rangeright = right->range;
   } else {
     rangeright = right->recurse_calculate_top_bottom();
   }
-  double newlength = labels.size();
-  range.first = rangeleft.first*left->labels.size()/newlength   
-    + rangeright.first*right->labels.size()/newlength;
-  range.second = range.first+newlength;
+  
+  double halfrange = labels.size()/2.0;
+  double mid = (rangeright.second+rangeleft.first)/2.0;
+  range.first = mid-halfrange;
+  range.second= mid+halfrange;
   return range;
 }
 
 void binode::recursively_get_coords(NumericMatrix &coords, int &index) {
+  
   coords(index, 0) = position;
   coords(index, 1) = range.first;
-
   if (isleaf()) {
     coords(index++, 2) = 0;
     coords(index, 0) = position;
     coords(index, 1) = range.second;
     coords(index++, 2) = 0;
   } else {
-    coords(index++, 2) = -0.5;  // allow curvature through the point
+    coords(index++, 2) = 0;//-0.5;  // allow curvature through the point
     left->recursively_get_coords(coords, index);
     // now to draw the joining point at this node
     coords(index, 0) = position;
     coords(index, 1) = range.first+(range.second-range.first)*left->labels.size()/static_cast<double>(labels.size());
-    coords(index++, 2) = 0.5;
+    coords(index++, 2) = 0;//0.5;
+    right->recursively_get_coords(coords, index);
     //
     coords(index, 0) = position;
     coords(index, 1) = range.second;

@@ -138,7 +138,7 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
    std::pair<int,int> GetLength() {
      if (labels.size()==1) return std::pair<int,int>(-1,-1);
    }
-
+  void recursively_get_coords(NumericMatrix &coords, int &index);
   /** returns a string which gives the set of mutations
    * that occur to get here on the tree
    */
