@@ -1,5 +1,5 @@
-\name{splitQTLTest}
-\alias{splitQTLTest}
+\name{qtrait_test}
+\alias{qtrait_test}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{ Test of Association between haplotype and a quantitative trait}
 \description{
@@ -31,7 +31,6 @@ splitQTLTest(haplotypes, qtrait, positions, maxk = 4, reps = 1000)
   \item{teststat }{The test statistics for values of k from 1 to maxk}
   \item{randTestStat}{The randomised Test Statistics}
   \item{p.value}{The p value (from simulation) from 1 to maxk}
-  \item{leaves}{The number of leaves - the number of multi-locus haplotypes}
   \item{pickStat}{The Statistic used to test significance in the randomisation test}
 }
 \references{\url{http://www.staff.ncl.ac.uk/i.j.wilson} 
@@ -62,7 +61,7 @@ Sevon P, Toivonen H, Ollikainen V: TreeDT: tree pattern mining for gene mapping.
 
 }
 \examples{
-library(snptree)
+library(rcppsnptree)
 data(snptreeExample)
 ## We can see that there appears to be some relation by looking at a
 ## Table of haplotypes by Case and control
@@ -74,13 +73,13 @@ s <- split_simple(haps)
 
 
 trait1 <- rnorm(nrow(haps))
-tst <- splitQTLTest(haps, trait1)
+tst <- qtrait_test(haps, trait1)
 tst$p.value
 
 ## now add a small value equal to 1/5 of a standard deviation nto all those in
 ## the last haplotype
 trait1[s$labels[['45']]] <- trait1[s$labels[['45']]] + 0.2
-tst <- splitQTLTest(haps, trait1)
+tst <- qtrait_test(haps, trait1)
 tst$p.value
 
 }

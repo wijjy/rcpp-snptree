@@ -30,7 +30,7 @@ No value returned.  This function called for side effect.
 
 
 \seealso{
-\code{\link{split_casecontrol}}}, \code{\link{split_simple}}}, \\code{\link{split_category}}}, \code{\link{split_qtrait}}}
+\code{\link{split_casecontrol}}, \code{\link{split_simple}}, \code{\link{split_category}}, \code{\link{split_qtrait}}}
 \examples{
 data(snptreeExample)
 s <- split_casecontrol(haps, which(sample=="Case"), position)

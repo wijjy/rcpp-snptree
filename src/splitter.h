@@ -15,7 +15,7 @@ using std::vector;
 using std::pair;
 using std::stack;
 
-bool SNPmatch( const IntegerMatrix &hap, const vector<int> &rows, int col);
+bool SNPmatch( const Rcpp::IntegerMatrix &hap, const vector<int> &rows, int col);
 
 template<typename T>
 bool mismatch(std::vector<T> &labels, T *cases, int nc);
@@ -23,7 +23,7 @@ bool mismatch(std::vector<T> &labels, T *cases, int nc);
 template<typename T>
 bool mismatch2(vector<T> &labels, T *cases, int nc);
 
-int count_intersection(vector<int> &a, IntegerVector &b);
+int count_intersection(vector<int> &a, Rcpp::IntegerVector &b);
 /** Note that both of these should be sorted                               */
 int count_intersection(vector<int> &a, int *cases, int nc);
 
@@ -34,7 +34,7 @@ int count_intersection(vector<int> &a, int *cases, int nc);
 class splitter {
 public:
   /** Constructor for the splitter class                 */
-  splitter( IntegerMatrix haplotypes) 
+  splitter( Rcpp::IntegerMatrix haplotypes) 
     :haps(haplotypes),
      samples(haplotypes.nrow()),
      nSNP(haplotypes.ncol()) {
@@ -68,7 +68,7 @@ public:
       return o;
   }
   /** get the coordinates for a bifurcation tree */
-  void get_coordinates(NumericMatrix coords) {
+  void get_coordinates(Rcpp::NumericMatrix coords) {
    // Rprintf(" root position = %d\n", root()->position);
   //  Rprintf(" root range is (%g, %g)\n", root()->range.first, root()->range.second);
     coords(0, 0) = root_->position;
@@ -250,9 +250,10 @@ public:
    * is understandable by ape.  The general method should perhaps
    * be reworked using my iterator for stepping through trees!
    */
-  void apesplit(vector<pair<int,int> >  &e, vector<vector<int> > &lab) {
+  void apesplit(vector<pair<int,int> > &e, vector<vector<int> > &lab) {
     root_->recurseApeSplit(e,lab,nleaves()+1);
   }
+
   /** An alternative apesplit that gets the numbers of cases and controls
    * for all terminal nodes                                               */
   void apesplit(int *edges, int *ncc, int *cases,int nc);
@@ -262,14 +263,14 @@ public:
   /** Get the numbers of cases and controls at the internal nodes and the 
       leaves - in lexical order */
   void getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal);
-  void getCaseControlLeaves(IntegerMatrix &ncc,  IntegerVector &cases);
+  void getCaseControlLeaves(Rcpp::IntegerMatrix &ncc,  Rcpp::IntegerVector &cases);
   /** Get the index of splits for each node - that is which of the SNPs the node was split on  */
   void getNodesPositions(std::vector<int> &pos);
   /** Get the labels at internal nodes in ape format */
   void getNodesLabels(std::vector<std::vector<int> > &labs);
   /** First need to think about the lengths and check them   */
   void getLengths(int CentrePos,int *posLRnodes, int *posLRtip);
-  void getTipLengths(int StartingPoint, IntegerMatrix &posLRtip);
+  void getTipLengths(int StartingPoint, Rcpp::IntegerMatrix &posLRtip);
   
   /** Get the leaves (it doesn'r matter is this is NLR or LRN   */
   std::vector<binode *> GetLeaves() {
@@ -313,7 +314,7 @@ private:
   binode *root_;                            /// The root of the tree
   std::list<binode *> leaves;               /// A list of leaves
   std::list<binode *> internal;             /// A list of internal nodes
-  IntegerMatrix haps;                       /// A pointer to a matrix of the data
+  Rcpp::IntegerMatrix haps;                       /// A pointer to a matrix of the data
   int samples, nSNP;                        /// the number of samples and SNPs
 };
 
@@ -397,7 +398,7 @@ void splitter::getNodesPositions(std::vector<int> &pos)
 
 /** Get the number of cases and controls at the leaves - this should be in 
  * lexical search order */
-void splitter::getCaseControlLeaves(IntegerMatrix &ncc, IntegerVector &cases) 
+void splitter::getCaseControlLeaves(Rcpp::IntegerMatrix &ncc, Rcpp::IntegerVector &cases) 
   {
     NLRIterator<binode> ii(root_);
     ii.nextLeaf();   // the root can never be a leaf
@@ -464,7 +465,7 @@ void splitter::getLengths(int CentrePos,int *posLRnode, int *posLRtip)
     }
   }
 
-void splitter::getTipLengths(int StartingPoint, IntegerMatrix &posLRtip) 
+void splitter::getTipLengths(int StartingPoint, Rcpp::IntegerMatrix &posLRtip) 
 {
   NLRIterator<binode> ii(root_);
   ii.nextLeaf();
@@ -563,7 +564,7 @@ bool splitter::fullsplit() {
   return change;
 }
 /** Do all the SNPs at position col for rows rows match?                         */
-bool SNPmatch(const IntegerMatrix &hap, const vector<int> &rows, int col) 
+bool SNPmatch(const Rcpp::IntegerMatrix &hap, const vector<int> &rows, int col) 
 {
   int SNP = hap(rows[0], col);
   for (size_t j=0;j<rows.size();j++) 
@@ -602,10 +603,10 @@ bool mismatch2(vector<T> &labels, T *cases, int nc)
   return true;
 }
 /** Note that both of these should be sorted                               */
-int count_intersection(vector<int> &a, IntegerVector &b)
+int count_intersection(vector<int> &a, Rcpp::IntegerVector &b)
 {
   std::vector<int>::iterator al=a.end(),ii=a.begin();
-  IntegerVector::iterator bl=b.end(),jj=b.begin();
+  Rcpp::IntegerVector::iterator bl=b.end(),jj=b.begin();
   int count=0;
   while (ii!=al && jj!=bl) {
     if (*ii<*jj) ++ii;
@@ -661,6 +662,4 @@ std::vector<std::pair<int,double> >
     root_->recurse_calculate_top_bottom();
   }
 
-
-  
 #endif

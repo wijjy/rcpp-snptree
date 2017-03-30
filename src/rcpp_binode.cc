@@ -71,7 +71,7 @@ std::vector<double> binode::TreeDistanceStatistic(const std::vector<int> &Cases,
 
 std::pair<int,int> binode::RecurseLeftRightDistances(const std::vector<int> &Cases)
 {
-  IntegerMatrix distance(2,3);
+  Rcpp::IntegerMatrix distance(2,3);
 
   if (isleaf()) {
     localCC[0]=CountIntersection(Cases,labels);
@@ -166,7 +166,7 @@ std::pair<double, double> binode::recurse_calculate_top_bottom()  {
   return range;
 }
 
-void binode::recursively_get_coords(NumericMatrix &coords, int &index) {
+void binode::recursively_get_coords(Rcpp::NumericMatrix &coords, int &index) {
   
   coords(index, 0) = position;
   coords(index, 1) = range.first;

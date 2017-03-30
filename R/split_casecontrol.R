@@ -38,7 +38,7 @@
     bb <- list(edge = edge, Nnode = leaves - 1, edge.length = rep(1, 2 * (leaves - 1)), tip.label = labs)
     class(bb) <- c("phylo")
     
-    if (!quiet) 
+    if (!quiet)   
         cat(leaves, " leaves on tree\n")
     
     b <- list(tree = bb, nodepos = a$nodepos[1:(leaves - 1)] + 1, ccnode = ccnode, cctip = ccleaf, n = n, cases = cases, labels = labs)
@@ -61,29 +61,11 @@
         stop("Please provide a sorted vector of case indices")
     }
     
-    n <- nrow(d)
-    
-    a <- .C("splitTestCC", 
-            as.integer(t(d)), 
-            as.integer(n), 
-            as.integer(ncol(d)), 
-            as.integer(positions - 1), 
-            as.integer(length(positions)), 
-            as.integer(cases), 
-            as.integer(length(cases)), 
-            as.integer(reps), 
-            as.integer(maxk), 
-            teststat = as.double(numeric(maxk)), 
-            randteststats = as.double(numeric(maxk * reps)), 
-            leaves = as.integer(numeric(1)), 
-            as.character(pickStat), 
-            PACKAGE = "snptree")
-    
-    rs <- matrix(a$randteststats, ncol = maxk, byrow = TRUE)
-    
-    p_ranks <- apply(rbind(a$teststat, rs), 2, function(x) (rank(x)[1]))
+    rs <- rcpp_splitTestCC(d, cases, positions, maxk, reps, pickStat)
+  
+    p_ranks <- apply(rs, 2, function(x) (rank(x)[1]))
     p <- 1 - (p_ranks - 0.5)/(reps + 1)
     
-    list(testStat = a$teststat, randTestStats = rs, leaves = a$leaves, p.value = p)
+    list(testStat = rs[1,], randTestStats = rs[-1, ], p.value = p)
 }
 

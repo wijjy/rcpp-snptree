@@ -9,7 +9,7 @@
 #include <stack>
 #include <cassert>
 #include <Rcpp.h>
-using namespace Rcpp;
+//using namespace Rcpp;
 
 
 /** Note that both of these should be sorted                               */
@@ -138,7 +138,7 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
    std::pair<int,int> GetLength() {
      if (labels.size()==1) return std::pair<int,int>(-1,-1);
    }
-  void recursively_get_coords(NumericMatrix &coords, int &index);
+  void recursively_get_coords(Rcpp::NumericMatrix &coords, int &index);
   /** returns a string which gives the set of mutations
    * that occur to get here on the tree
    */
@@ -153,7 +153,7 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
     return res;
   }
 
-   int GetLength(int centre,const IntegerMatrix &haps)
+   int GetLength(int centre,const Rcpp::IntegerMatrix &haps)
    {
    		if (labels.size()==1) return -1;
    		int nSNP=haps.ncol();
@@ -500,7 +500,7 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
 
 
   std::vector<std::pair<int,double> >
-  maxLengths(int centre, int k, int maxn, const IntegerMatrix &data) {
+  maxLengths(int centre, int k, int maxn, const Rcpp::IntegerMatrix &data) {
     std::vector<std::pair<int,double> > Left;
     if (labels.size()<static_cast<size_t>(k)) return Left;
     if (isleaf()) {
@@ -536,7 +536,7 @@ public:
   binode *up;
   int position;     // position of the SNP that causes this split
   std::vector<int> labels;
-  IntegerMatrix distance;   /** Distances for tree distance calculations    */
+  Rcpp::IntegerMatrix distance;   /** Distances for tree distance calculations    */
   int localCC[2];
   std::pair<double, double> range;
 };

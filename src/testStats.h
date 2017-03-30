@@ -3,7 +3,11 @@
 
 
 #include <Rcpp.h>
-using namespace Rcpp;
+#include <vector>
+#include "Rmath.h"
+#include "R.h"
+
+//using namespace Rcpp;
 
 //two pass mean and variance calculation
 template <typename T>
@@ -41,9 +45,7 @@ double SqSevonStat(T x, T n, double p) {
   return z*z;
 }
 
-#ifdef USE_R
-#include "Rmath.h"
-#include "R.h"
+
 
 template <typename T>
 double LogP(T x, T n, double p)
@@ -66,35 +68,5 @@ double LogPNorm(T x, T n, double p)
     return -R::pbinom(static_cast<double>(x-1),p,static_cast<unsigned int>(n),0,1)
     +R::pbinom(static_cast<double>(x),phat,static_cast<unsigned int>(n),1,1);
 }  
-
-#else
-#include "gsl/gsl_cdf.h"
-
-
-template <typename T>
-double LogP(T x, T n, double p)
-{
-  if (static_cast<double>(x)/static_cast<double>(n) < p)
-    return -log(gsl_cdf_binomial_P(static_cast<unsigned int>(x),p,static_cast<unsigned int>(n)));
-  else
-    return -log(gsl_cdf_binomial_Q(static_cast<unsigned int>(x-1),p,static_cast<unsigned int>(n)));
-}  
-
-
-template <typename T>
-double LogPNorm(T x, T n, double p)
-{
-  double phat=static_cast<double>(x)/static_cast<double>(n) ;
-  if (phat < p)
-    return -log(gsl_cdf_binomial_P(static_cast<unsigned int>(x),p,static_cast<unsigned int>(n)))
-    +log(gsl_cdf_binomial_P(static_cast<unsigned int>(x),phat,static_cast<unsigned int>(n)));
-  else
-    return -log(gsl_cdf_binomial_Q(static_cast<unsigned int>(x-1),p,static_cast<unsigned int>(n)))
-    +log(gsl_cdf_binomial_P(static_cast<unsigned int>(x),phat,static_cast<unsigned int>(n)));
-}  
-
-
-
-#endif
 
 #endif
