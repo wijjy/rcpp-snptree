@@ -4,18 +4,6 @@
 #include "splitter.h"
 #include "ijw_rand.h" 
 
-
-// This is a simple example of exporting a C++ function to R. You can
-// source this function into an R session using the Rcpp::sourceCpp 
-// function (or via the Source button on the editor toolbar). Learn
-// more about Rcpp at:
-//
-//   http://www.rcpp.org/
-//   http://adv-r.had.co.nz/Rcpp.html
-//   http://gallery.rcpp.org/
-//
-
-
 // [[Rcpp::export]]
 SEXP simple_split(Rcpp::IntegerMatrix d, Rcpp::IntegerVector positions) {
     splitter *s = new splitter(d);                                     // define the splitter object s
@@ -75,7 +63,7 @@ Rcpp::IntegerMatrix case_control_leaves(SEXP ptr, Rcpp::IntegerVector cases) {
   return xxx;
 }
 /********************************************************************************************/
-/** Get the count of haplotypeat at each leaf                                               */
+/** Get the count of haplotype at at each leaf                                             */
 /********************************************************************************************/
 // [[Rcpp::export]]
 Rcpp::IntegerVector  leaf_count(SEXP ptr) {
