@@ -33,17 +33,12 @@ int nleaves(SEXP ptr) {
 // [[Rcpp::export]]
 Rcpp::List get_phylo(SEXP ptr) {
   Rcpp::XPtr< splitter > s(ptr);
-  std::cerr << "here1" << std::endl;
 
   Rprintf("here1");
   std::cerr << "here1" << std::endl;
   std::vector<std::pair<int,int> > edges;            // set up date structure for edges
   std::vector<std::vector<int> > labels;             // and for labels  
-  Rcpp::List L =  Rcpp::List::create(
-    Rcpp::Named("edge") = 1
-  );
-  L.attr("class") = "phylo";
-  return L;
+ 
   s->apesplit(edges, labels);
   Rprintf("here2");
   
@@ -54,7 +49,7 @@ Rcpp::List get_phylo(SEXP ptr) {
     e(i, 1) = edges[i].second;
   }
   
-  Rcpp::List L1 =  Rcpp::List::create(
+  Rcpp::List L =  Rcpp::List::create(
     Rcpp::Named("edge") = e,
     Rcpp::Named("class") = "phylo"
   );
@@ -206,6 +201,8 @@ Rcpp::NumericMatrix rcppsplittestQTL( Rcpp::IntegerMatrix data,
                                       int maxk,
                                       const std::string statPick)
 {
+  Rprintf("here1");
+  
   splitter s(data);
   for (int i=0; i< positions.size(); i++) s.split(positions[i]-1);
   

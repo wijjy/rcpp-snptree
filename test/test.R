@@ -1,6 +1,8 @@
 library(rcppsnptree)
 data("snptreeExample")
 a <- simple_split(haps, position)
+
+b <- rcpp_split_simple(haps, position)
 nleaves(a)
 p <- get_phylo(a)
 cases <- 1:1000
