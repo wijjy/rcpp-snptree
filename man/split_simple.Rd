@@ -42,8 +42,9 @@ Proceedings. vol. 5(supp 9):S98 2011.
 data(snptreeExample)
 s <- split_simple(haps)
 class(s)
+library(ape)
 plot(s)
-data.frame(haps = simple$tip.haplotypes, n=sapply(simple$labels, length))
+data.frame(haps = s$tip.haplotypes, n=sapply(s$tree$labels, length))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

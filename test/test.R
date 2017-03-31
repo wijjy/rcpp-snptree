@@ -1,10 +1,13 @@
 library(rcppsnptree)
 data("snptreeExample")
-a <- simple_split(haps, position)
+a <- simple_split(haps, position[1:5])
+b <- rcpp_split_simple(haps, position[1:5])
+library(ape)
+plot(b)
 
-b <- rcpp_split_simple(haps, position)
 nleaves(a)
 p <- get_phylo(a)
+plot(p)
 cases <- 1:1000
 case_control_leaves(a,cases)
 leaves <- leaf_count(a)
@@ -14,6 +17,8 @@ table(res)
 res[res[,1]==-1,1] <- max(res[,1])+1 
 plot(range(res[,1]), range(res[,2]), type="n", xlab="", ylab="", axes=TRUE)
 xspline(res[,1], res[,2], shape=res[,3], open=FALSE, col="lightgrey", border=FALSE)
+
+
 
 
 

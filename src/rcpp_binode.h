@@ -534,7 +534,7 @@ public:
   binode *left;
   binode *right;
   binode *up;
-  int position;     // position of the SNP that causes this split
+  int position;                   // position of the SNP that causes this split
   std::vector<int> labels;
   Rcpp::IntegerMatrix distance;   /** Distances for tree distance calculations    */
   int localCC[2];

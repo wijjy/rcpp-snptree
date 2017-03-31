@@ -7,5 +7,7 @@ Author: Ian Wilson
 Maintainer: Ian Wilson <Ian.Wilson@ncl.ac.uk>
 Description: Creates and tests lexical trees for differences in frequency of words (that represent haplotypes) between cases and controls.
 License: GPL (>= 2)
-Imports: Rcpp (>= 0.12.1)
-LinkingTo: Rcpp, ape
+Imports: 
+        Rcpp (>= 0.12.1), 
+Suggests: 
+        ape

@@ -11,28 +11,18 @@
         stop("values in Splitpositions should lie between 1 and ncol(d)")
     
 
-    a <- rcpp_split_simple( d, SplitPositions-1);
+    a <- rcpp_split_simple(d, SplitPositions);
 
-    a$labels <- tapply(a$labels, rep(1:a$nleaves, a$leafcount), c)
-
-    bb <- list(edge = a$edge, 
-               Nnode = a$nleaves - 1, 
-               edge.length = rep(1, 2 * (a$nleaves - 1)), 
-               tip.label = a$labels)
-    
-    class(bb) <- c("phylo")
-    
     haplotype_string <- apply(d, 1, paste, collapse = "")
     firstlabel <- sapply(a$labels, function(x) x[1])  ## haplotypes at the 
     tip_haplotypes <- haplotype_string[firstlabel]
+    names(tip_haplotypes) <- 1:(a$Nnode+1)
     
-    if (!quiet) 
-        cat(leaves, " leaves on tree\n")
+    if (!quiet) cat(a$Nnode+1, " leaves on tree\n")
     
-    b <- list(tree = bb, 
-              nodepos = a$nodepos[1:(a$nleaves - 1)] + 1, 
+    b <- list(tree = a, 
+              nodepos = a$nodepos[1:(a$Nnode)] + 1, 
               n = nrow(d), 
-              labels = a$labels, 
               tip.haplotypes = tip_haplotypes)
     
     class(b) <- c("split")
