@@ -16,39 +16,7 @@ extern "C" {
    *
    */
   
-  void splittestQTL( int *data, 
-                     int *samplesize, 
-                     int *nSNP, 
-                     int *positions, 
-                     int *npos,
-                     double *qtl,
-                     int *reps, 
-                     int *maxk,
-                     double *teststat,
-                     double *randteststats,
-                     int *nterm, 
-                     char **statPick)
-  {
-
-     TNT::Array2D<int> d(*samplesize, *nSNP, data);
-    splitter<int> s(d,d.dim1(), d.dim2());
-    for (int i=0;i<*npos;i++) s.split(positions[i]);
-    
-    std::vector<double> myqtl(qtl, qtl + *samplesize);
-    std::vector<double> stat=s.qtlStat(myqtl, *maxk, *statPick);
-    for (size_t jj=0;jj< *maxk;jj++) teststat[jj] = stat[jj];
-    
-    rng r;
-    for (int i=0; i< *reps; i++) {
-        permute(myqtl, r);
-        std::vector<double> rstat =  s.qtlStat(myqtl, *maxk, *statPick);
-        for (size_t jj=0;jj< *maxk;jj++) {
-          randteststats[i*(*maxk) + jj] = rstat[jj];
-        }
-      }
-
-      *nterm=s.nleaves();
-  }
+ 
 
   /** Get the split in a form that is suitable for using within ape                    
    * The nodepos and edgepos give the left hand and right hand 

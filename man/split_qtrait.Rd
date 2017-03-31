@@ -1,12 +1,11 @@
 \name{qtrait_test}
 \alias{qtrait_test}
-%- Also NEED an '\alias' for EACH other topic documented here.
 \title{ Test of Association between haplotype and a quantitative trait}
 \description{
    Function to test for association using qtl by building a tree of haplotypes.  
 }
 \usage{
-splitQTLTest(haplotypes, qtrait, positions, maxk = 4, reps = 1000)
+qtrait_test(haplotypes, qtrait, positions, maxk = 4, reps = 1000, pickStat = "A")
 }
 \arguments{
   \item{haplotypes}{ A matrix of haplotypes with samples by row }
@@ -68,9 +67,6 @@ data(snptreeExample)
 library(snptree)
 data(snptreeExample)
 s <- split_simple(haps)
-## We can see that there appears to be some relation by looking at a
-## Table of haplotypes by Case and control
-
 
 trait1 <- rnorm(nrow(haps))
 tst <- qtrait_test(haps, trait1)

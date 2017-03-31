@@ -111,10 +111,10 @@ public:
     avevar(qvals, meanvar[0], meanvar[1]);
     double sumx;
     switch(pick[0]) {
-    case 'Z': return root_->RecurseZStat2(qvals, sumx, maxk, meanvar);
-    case 'A': return root_->RecurseZStatA(qvals, sumx, maxk, meanvar);
-    case 'P': return root_->RecurseZStatP(qvals, sumx, maxk, meanvar);
-    case 'N': return root_->RecurseZStatN(qvals, sumx, maxk, meanvar);
+      case 'Z': return root_->RecurseZStat2(qvals, sumx, maxk, meanvar);
+      case 'A': return root_->RecurseZStatA(qvals, sumx, maxk, meanvar);
+      case 'P': return root_->RecurseZStatP(qvals, sumx, maxk, meanvar);
+      case 'N': return root_->RecurseZStatN(qvals, sumx, maxk, meanvar);
 
     default: 
       std::ostringstream oss;
@@ -251,7 +251,7 @@ public:
    * be reworked using my iterator for stepping through trees!
    */
   void apesplit(vector<pair<int,int> > &e, vector<vector<int> > &lab) {
-    root_->recurseApeSplit(e,lab,nleaves()+1);
+    root_->recurseApeSplit(e, lab, nleaves()+1);
   }
 
   /** An alternative apesplit that gets the numbers of cases and controls

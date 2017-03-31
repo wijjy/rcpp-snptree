@@ -31,40 +31,52 @@ int nleaves(SEXP ptr) {
 }
 
 // [[Rcpp::export]]
+Rcpp::List node_labels(SEXP ptr) {
+  Rcpp::XPtr< splitter > s(ptr);
+  Rcpp::List L;
+  NLRIterator<binode> ii(s->root());
+  ii.nextLeaf();   // the root can never be a leaf
+  while (!ii.isend()) {
+    L.push_back(Rcpp::IntegerVector((*ii)->labels.begin(), (*ii)->labels.end())+1);  // sugar takes care
+    ii.nextLeaf();                                                                   // of adding one
+  } 
+  return L;
+}
+
+// [[Rcpp::export]]
 Rcpp::List get_phylo(SEXP ptr) {
   Rcpp::XPtr< splitter > s(ptr);
 
-  Rprintf("here1");
-  std::cerr << "here1" << std::endl;
   std::vector<std::pair<int,int> > edges;            // set up date structure for edges
   std::vector<std::vector<int> > labels;             // and for labels  
  
   s->apesplit(edges, labels);
-  Rprintf("here2");
+  Rcpp::NumericMatrix e(edges.size(), 2);
   
-  Rcpp::NumericMatrix e(s->nleaves(), 2);
-  
-  for (int i=0; i<edges.size(); i++) {
+  for (size_t i=0; i< edges.size(); i++) {
     e(i, 0) = edges[i].first;
     e(i, 1) = edges[i].second;
   }
   
   Rcpp::List L =  Rcpp::List::create(
     Rcpp::Named("edge") = e,
-    Rcpp::Named("class") = "phylo"
+    Rcpp::Named("Nnode") = s->nleaves()-1,
+    Rcpp::Named("tip.label") = Rcpp::seq_len(s->nleaves())
   );
   L.attr("class") ="phylo";
   return L;
 }
 
 // [[Rcpp::export]]
-Rcpp::IntegerMatrix  case_control_leaves(SEXP ptr, Rcpp::IntegerVector cases) {
+Rcpp::IntegerMatrix case_control_leaves(SEXP ptr, Rcpp::IntegerVector cases) {
   Rcpp::XPtr< splitter > s(ptr);
   Rcpp::IntegerMatrix xxx(s->nleaves(), 2);
   s->getCaseControlLeaves(xxx, cases);
   return xxx;
 }
-
+/********************************************************************************************/
+/** Get the count of haplotypeat at each leaf                                               */
+/********************************************************************************************/
 // [[Rcpp::export]]
 Rcpp::IntegerVector  leaf_count(SEXP ptr) {
   Rcpp::XPtr< splitter > s(ptr);
@@ -194,15 +206,13 @@ Rcpp::NumericMatrix rcpp_splitTestCC(Rcpp::IntegerMatrix data,
 
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix rcppsplittestQTL( Rcpp::IntegerMatrix data, 
+Rcpp::NumericMatrix rcppsplittestqtrait( Rcpp::IntegerMatrix data, 
                                       Rcpp::NumericVector qtl,
                                       Rcpp::IntegerVector positions, 
                                       int reps, 
                                       int maxk,
                                       const std::string statPick)
 {
-  Rprintf("here1");
-  
   splitter s(data);
   for (int i=0; i< positions.size(); i++) s.split(positions[i]-1);
   
@@ -224,55 +234,99 @@ Rcpp::NumericMatrix rcppsplittestQTL( Rcpp::IntegerMatrix data,
   return randteststats;
 }
 
-
+/*******************************************************************************************************/
+/** Get a simple tree from a set of data doing all splitting within c++ and return an object of class 
+* phylo 
+*/
+/******************************************************************************************************/
 // [[Rcpp::export]]
 Rcpp::List rcpp_split_simple( Rcpp::IntegerMatrix data, 
                    Rcpp::IntegerVector positions)  { 
 
-  splitter s(data);                                  // define the splitter object s
-  for (int i=0;i< positions.size();i++) s.split(positions[i]);   // split at positions
-  int len=s.nleaves();                               // how many leaves do we have on the tree
-  
-  std::vector<std::pair<int,int> > edges;            // set up date structure for edges
-  std::vector<std::vector<int> > labels;             // and for labels  
+  splitter s(data);                                                // define the splitter object s
+  for (int i=0;i< positions.size();i++) s.split(positions[i]-1);   // split at positions
+
+  std::vector<std::pair<int,int> > edges;                          // set up date structure for edges
+  std::vector<std::vector<int> > labels;                           // and for labels  
   
   s.apesplit(edges, labels);
   
   // get the lengths of the labels to allow us to pass this information back to R
   // the information is returned in the correct order for ape which is root->left->right
   
-  Rcpp::IntegerVector leafcount(len);
-  Rcpp::IntegerVector comblabels(data.nrow());
+  Rcpp::IntegerVector leafcount(s.nleaves());
+  Rcpp::List comblabels;
   
-  int count=0;
   for (size_t ii=0; ii < labels.size(); ii++) {
-    for (size_t jj=0; jj < labels[ii].size(); jj++) 
-      comblabels[count++] = labels[ii][jj]+1;  // get 1 offset not 0
+    comblabels.push_back(Rcpp::IntegerVector(labels[ii].begin(), labels[ii].end())+1);
     leafcount[ii] = static_cast<int>(labels[ii].size());
   }
   
   int nedges=static_cast<int>(edges.size());
-  if (nedges != 2*(len-1))
+  if (nedges != 2*(s.nleaves()-1))
     throw std::range_error("problem in C++ code split_simple\n");
   
   Rcpp::IntegerMatrix edge(nedges, 2);
   for (int i=0; i<nedges; i++) {
-    edge(i,0) = edges[i].first;
-    edge(i,1) = edges[i].second;
+    edge(i, 0) = edges[i].first;
+    edge(i, 1) = edges[i].second;
   }
   // now try to get the lengths.  Note that the centre of this split is positions[0].
   std::vector<int> nodePos;
   s.getNodesPositions(nodePos);
   Rcpp::IntegerVector nodepos(nodePos.begin(), nodePos.end());
-  for (size_t ii=0;ii<nodePos.size();ii++) 
-    nodepos[ii]=nodePos[ii];
+  for (size_t ii=0;ii<nodePos.size();ii++) nodepos[ii]=nodePos[ii];
   
-  return  Rcpp::List::create(
+  Rcpp::List L = Rcpp::List::create(
       Rcpp::Named("edge") = edge,
+      Rcpp::Named("tip.label") = Rcpp::seq_len(s.nleaves()),
+      Rcpp::Named("Nnode") = s.nleaves()-1,
       Rcpp::Named("labels") = comblabels,
-      Rcpp::Named("nleaves") = len,
       Rcpp::Named("nodepos") = nodepos,
       Rcpp::Named("leafcount") = leafcount
-    );
+  );
+  L.attr("class") ="phylo";
+  return L;
+}
+
+
+/** Get the split in a form that is suitable for using within ape                    
+* The nodepos and edgepos give the left hand and right hand 
+* positions of the minimum and maximum range of the haplotypes at each 
+* node and tip (note both are -1 for tips with only a single haplotype 
+* i.e. those that have been successfully separated)                        
+* The positions are calculated for all data, not just those positions that have
+* been separated out, but they always include the starting position (which should guarantee
+* that all positions that the haplotypes have been split on are included).   
+*/
+// [[Rcpp::export]]
+Rcpp::NumericVector qtrait_statistics(SEXP ptr, Rcpp::NumericVector qtrait, const std::string statPick) {
+  Rcpp::XPtr< splitter > s(ptr);
+  int len=s->nleaves();
+  
+  std::vector<double> qv(qtrait.begin(), qtrait.end());
+  double xbar = mean(qtrait);
+  double sample_s = sd(qtrait);
+  double s_squared=sample_s*sample_s;
+  Rcpp::NumericVector sumx(len, 0.0);
+  Rcpp::NumericVector n(len, 0.0);
+  
+  NLRIterator<binode> ii(s->root());
+  ii.nextLeaf();   // the root can never be a leaf
+  int index=0;
+  while (!ii.isend()) {
+    for (size_t jj=0; jj<(*ii)->labels.size(); jj++) 
+      sumx[index] += qtrait[(*ii)->labels[jj]];
+    n[index++] = (*ii)->labels.size();
+    ii.nextLeaf();
+  }
+  switch(statPick.c_str()[0]) {
+      case 'Z': return  n*(sumx/n - xbar)*(sumx/n - xbar)/s_squared;
+      case 'A': return abs(sqrt(n)*(sumx/n - xbar)/sample_s);
+      case 'P': return sqrt(n)*(sumx/n - xbar)/sample_s;
+      case 'N': return -sqrt(n)*(sumx/n - xbar)/sample_s;
+  default: 
+    Rcpp::stop("pickstat must be one of 'Z', 'A', 'N' or 'P'");
+  }
 }
   
