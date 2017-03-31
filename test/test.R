@@ -2,6 +2,7 @@ library(rcppsnptree)
 data("snptreeExample")
 a <- simple_split(haps, position)
 nleaves(a)
+p <- get_phylo(a)
 cases <- 1:1000
 case_control_leaves(a,cases)
 leaves <- leaf_count(a)

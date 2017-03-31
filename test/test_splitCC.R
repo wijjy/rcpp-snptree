@@ -1,4 +1,5 @@
 library(rcppsnptree)
+library(snptree)
 data(snptreeExample)
 ## We can see that there appears to be some relation by looking at a
 ## Table of haplotypes by Case and control
@@ -7,7 +8,12 @@ table(haplotype, sample)
 chisq.test(table(haplotype, sample), simulate=TRUE, B=2000)
 ## We should be able to repeat this by looking at the tips of
 ## out haplotype tree only, whihc we can do by setting maxk=45
-s <- splitTestCC(haps, which(sample=="Case"), reps=1000, pickStat="G", maxk=45)
+system.time(s1 <- snptree::splitTestCC(haps, which(sample=="Case"), reps=100000, pickStat="G", maxk=45))
+system.time(s2 <- rcppsnptree::splitTestCC(haps, which(sample=="Case"), reps=100000, pickStat="G", maxk=45))
+
+plot(density(s1$randTestStats[,1]))
+lines(density(s2$randTestStats[,1]), col=2)
+
 print(s$p.value)
 
 s <- splitTestCC(haps, which(sample=="Case"), reps=1000, pickStat="AbsSevon")

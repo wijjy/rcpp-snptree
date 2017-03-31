@@ -81,7 +81,7 @@
         stop("Error, statPick should be one of A,P,Z,N")
     }
     
-    rs <- rcppsplittestQTL(d, positions, qtrait, reps, maxk, pickStat)
+    rs <- rcppsplittestQTL(d, qtrait, positions, reps, maxk, pickStat)
   
     p_ranks <- apply(rs, 2, function(x) (rank(x)[1]))
     p <- 1 - (p_ranks - 0.5)/(reps + 1)

@@ -17,7 +17,7 @@
 
 
 // [[Rcpp::export]]
-SEXP  simple_split(Rcpp::IntegerMatrix d, Rcpp::IntegerVector positions) {
+SEXP simple_split(Rcpp::IntegerMatrix d, Rcpp::IntegerVector positions) {
     splitter *s = new splitter(d);                                     // define the splitter object s
     for (int i=0; i<positions.size(); i++) s->split(positions[i]-1);   // split at positions
     Rcpp::XPtr< splitter > pt(s, true);                                // get pointer as SEXP
@@ -32,14 +32,34 @@ int nleaves(SEXP ptr) {
 
 // [[Rcpp::export]]
 Rcpp::List get_phylo(SEXP ptr) {
+  Rcpp::XPtr< splitter > s(ptr);
+  std::cerr << "here1" << std::endl;
+
+  Rprintf("here1");
+  std::cerr << "here1" << std::endl;
   std::vector<std::pair<int,int> > edges;            // set up date structure for edges
   std::vector<std::vector<int> > labels;             // and for labels  
-  s.apesplit(edges, labels);
-  NumericMatrix e(s->nleaves(), 2);
+  Rcpp::List L =  Rcpp::List::create(
+    Rcpp::Named("edge") = 1
+  );
+  L.attr("class") = "phylo";
+  return L;
+  s->apesplit(edges, labels);
+  Rprintf("here2");
   
+  Rcpp::NumericMatrix e(s->nleaves(), 2);
   
+  for (int i=0; i<edges.size(); i++) {
+    e(i, 0) = edges[i].first;
+    e(i, 1) = edges[i].second;
+  }
   
-  
+  Rcpp::List L1 =  Rcpp::List::create(
+    Rcpp::Named("edge") = e,
+    Rcpp::Named("class") = "phylo"
+  );
+  L.attr("class") ="phylo";
+  return L;
 }
 
 // [[Rcpp::export]]
@@ -155,26 +175,24 @@ Rcpp::NumericMatrix rcpp_splitTestCC(Rcpp::IntegerMatrix data,
      int samplesize = data.nrow();
   
      std::vector<int> caseVec(cases.begin(), cases.end());
-    Rcpp::NumericMatrix randteststats(reps+1, maxk);
+     Rcpp::NumericMatrix randteststats(reps+1, maxk);
     
-    std::vector<double> stat=s.getStat(caseVec, maxk, pickStat.c_str());   // use default test statistic
-    for (int jj=0;jj < maxk;jj++) randteststats(0,jj) = stat[jj];
+     std::vector<double> stat=s.getStat(caseVec, maxk, pickStat.c_str());   // use default test statistic
+     for (int jj=0;jj < maxk;jj++) randteststats(0, jj) = stat[jj];
   
-    rng r;
-    std::vector<int> cc(samplesize);
-    for (int i=0;i< samplesize;i++) cc[i]=i;
+     rng r;
+     std::vector<int> cc(samplesize);
+     for (int i=0;i< samplesize;i++) cc[i]=i;
     
-    
-    
-    for (int i=0;i< reps;i++) {
-        permute(cc,r);
+     for (int i=0;i< reps;i++) {
+        permute(cc, r);
         caseVec.assign(cc.begin(),cc.begin()+ ncases);
         std::sort(caseVec.begin(),caseVec.begin()+ ncases);
         std::vector<double> rstat =  s.getStat(caseVec, maxk, pickStat.c_str());
         for (int jj=0; jj< maxk; jj++) {
             randteststats(i+1, jj) = rstat[jj];
       }
-  }
+    }
     return randteststats;
 }
 
@@ -182,20 +200,20 @@ Rcpp::NumericMatrix rcpp_splitTestCC(Rcpp::IntegerMatrix data,
 
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcppsplittestQTL( Rcpp::IntegerMatrix data, 
-                                      Rcpp::IntegerVector positions, 
                                       Rcpp::NumericVector qtl,
+                                      Rcpp::IntegerVector positions, 
                                       int reps, 
                                       int maxk,
                                       const std::string statPick)
 {
-  Rcpp::NumericMatrix randteststats(reps+1, maxk);
-  
   splitter s(data);
-  for (int i=0; i< positions.size(); i++) s.split(positions[i]);
+  for (int i=0; i< positions.size(); i++) s.split(positions[i]-1);
   
   std::vector<double> myqtl(qtl.begin(), qtl.end());
+  Rcpp::NumericMatrix randteststats(reps+1, maxk);
+
   std::vector<double> stat=s.qtlStat(myqtl, maxk, statPick.c_str());
-  for (int jj=0;jj< maxk;jj++) randteststats(0, jj) = stat[jj];
+  for (int jj=0; jj< maxk; jj++) randteststats(0, jj) = stat[jj];
   
   rng r;
   for (int i=0; i< reps; i++) {

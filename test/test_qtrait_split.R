@@ -9,7 +9,7 @@ data(snptreeExample)
 
 
 trait1 <- rnorm(nrow(haps))
-tst <- spli tQTLTest(haps, trait1)
+tst <- qtrait_test(haps, trait1)
 tst$p.value
 
 ## now add a small value equal to 1/5 of a standard deviation nto all those in
