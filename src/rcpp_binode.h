@@ -9,14 +9,12 @@
 #include <stack>
 #include <cassert>
 #include <Rcpp.h>
-//using namespace Rcpp;
-
 
 /** Note that both of these should be sorted                               */
 template<typename T>
 int CountIntersection(const std::vector<T> &a, const std::vector<T> &b)
 {
-  typename std::vector<T>::const_iterator al=a.end(),bl=b.end(),ii=a.begin(),jj=b.begin();
+  typename std::vector<T>::const_iterator al=a.end(), bl=b.end(), ii=a.begin(), jj=b.begin();
   int count=0;
   while (ii!=al && jj!=bl) {
     if (*ii<*jj) {
@@ -31,10 +29,7 @@ int CountIntersection(const std::vector<T> &a, const std::vector<T> &b)
   }
   return count;
 }
-
-using std::pair;
-using std::stack;
-
+// Forward declaration for an iterator class
 template <class T> class NLRIterator;
 /** A class for representing haplotype trees
  *  The trees are represented as binary nodes with the addition of a
@@ -67,7 +62,7 @@ public:
     int newcount=count+1;
     if (left->isleaf()) {
       labs.push_back(left->labels);
-      Edge.push_back(pair<int,int>(count, labs.size()));
+      Edge.push_back(std::pair<int,int>(count, labs.size()));
     } else {
       Edge.push_back(std::pair<int,int>(count, newcount));
       newcount = left->recurseApeSplit(Edge, labs, newcount);
@@ -601,7 +596,7 @@ private:
   }
   /** A pointer to the current T                              */
   T* current;
-  stack<T *> visited;  /** which nodes have already been visited */
+  std::stack<T *> visited;  /** which nodes have already been visited */
 };
 
 /** A class to step through a tree in LEFT - RIGHT - Node order
@@ -667,7 +662,7 @@ private:
   }
   /** A pointer to the current T                              */
   T* current;
-  stack<std::pair<T *, bool> > visited;  /** which nodes have already been visited */
+  std::stack<std::pair<T *, bool> > visited;  /** which nodes have already been visited */
 };
 
 #endif
