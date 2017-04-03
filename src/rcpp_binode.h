@@ -112,6 +112,12 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
     }
     return next_node;
   }
+  /** What is the "height" of the node
+   * 
+   */
+  double height() const {
+    return(range.second-range.first);
+  }
   
   /** is the node a leaf?                                                   */
   bool isleaf() const {

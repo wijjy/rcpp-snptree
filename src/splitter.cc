@@ -334,8 +334,9 @@ bool mismatch2(vector<T> &labels, T *cases, int nc)
  * for drawing.  gap is in proportion to unity.  
  */
 void splitter::calculate_top_bottom(double gap) {
+  // start by calculating the top and bottom positions for the leaves
   NLRIterator<binode> ii(root());
-  ii.nextLeaf();   // the root can never be a leaf
+  ii.nextLeaf();                      // the root can never be a leaf
   std::pair<double, double> last(0.0, (*ii)->labels.size());
   (*ii)->range = last;
   ii.nextLeaf();
