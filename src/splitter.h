@@ -317,7 +317,7 @@ private:
   binode *root_;                            /// The root of the tree
   std::list<binode *> leaves;               /// A list of leaves
   std::list<binode *> internal;             /// A list of internal nodes
-  Rcpp::IntegerMatrix haps;                       /// A pointer to a matrix of the data
+  Rcpp::IntegerMatrix haps;                 /// A pointer to a matrix of the data
   int samples, nSNP;                        /// the number of samples and SNPs
 };
 

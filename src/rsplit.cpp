@@ -140,21 +140,7 @@ Rcpp::NumericMatrix  stumps(SEXP ptr, int pos1, int pos2, double gap=1) {
   return ypositions;
 }
 
-// [[Rcpp::export]]
-Rcpp::NumericMatrix  get_coordinates(SEXP ptr, double gap=1) {
-  Rcpp::XPtr< splitter > s(ptr);
-  s->calculate_top_bottom(gap);   // gets the tops and bottoms 
-                                  // for the leaves and the rest of the tree
-  int leaves = s->nleaves();
-  Rcpp::NumericMatrix coords(2*leaves+3*(leaves-1), 3);
-  
-  s->get_coordinates(coords);
-  for (int i=0; i<coords.nrow(); i++) {
-    coords(i, 0) +=1; 
-  }
-  
-  return coords;
-}
+
 
 // [[Rcpp::export]]
 Rcpp::NumericMatrix rcpp_splitTestCC(Rcpp::IntegerMatrix data, 
