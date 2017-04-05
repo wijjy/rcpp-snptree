@@ -43,6 +43,7 @@ public:
     leaves.push_back(new binode(a));
     root_=leaves.front();
   }
+  /** Return a pointer to the root                        */
   binode *root() const {
     return root_;
   }
@@ -217,10 +218,6 @@ public:
     }
   }
 
-
-
-
-
   std::vector<std::pair<double, std::vector< binode *> > > 
         getNodes( const vector<int> &cases,int maxk=5, char pick='P') {
     double pp=cases.size()/static_cast<double>(samples);
@@ -272,7 +269,7 @@ public:
   void getLengths(int CentrePos,int *posLRnodes, int *posLRtip);
   void getTipLengths(int StartingPoint, Rcpp::IntegerMatrix &posLRtip);
   
-  /** Get the leaves (it doesn'r matter is this is NLR or LRN   */
+  /** Get a vector of pointers to leaves (it doesn't matter is this is NLR or LRN   */
   std::vector<binode *> GetLeaves() {
     std::vector<binode *> xx;
     xx.reserve(nleaves());                 // reserve the correct length
@@ -284,7 +281,7 @@ public:
     }
     return xx;
   }
-  /** Get a vector of internal nodes in NLR order                  */
+  /** Get a vector of pointers to internal nodes in NLR order               */
   std::vector<binode *> GetLRNInternal() {
     std::vector<binode *> xx;
     xx.reserve(nleaves()-1);                 // reserve the correct length
@@ -312,7 +309,30 @@ public:
       std::vector<std::pair<int,double> > a;
       return a;	
     }
-  
+  std::list<binode *>::iterator begin_leaf() {
+    return leaves.begin();
+  }
+  std::list<binode *>::iterator end_leaf() {
+    return leaves.end();
+  }
+  std::list<binode *>::const_iterator begin_leaf() const {
+    return leaves.begin();
+  }
+  std::list<binode *>::const_iterator end_leaf() const {
+    return leaves.end();
+  }
+  std::list<binode *>::iterator begin_internal() {
+    return internal.begin();
+  }
+  std::list<binode *>::iterator end_internal() {
+    return internal.end();
+  }
+  std::list<binode *>::const_iterator begin_internal() const {
+    return internal.begin();
+  }
+  std::list<binode *>::const_iterator end_internal() const {
+    return internal.end();
+  }
 private:
   binode *root_;                            /// The root of the tree
   std::list<binode *> leaves;               /// A list of leaves

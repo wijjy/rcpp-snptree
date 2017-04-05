@@ -8,6 +8,8 @@
 SEXP simple_split(Rcpp::IntegerMatrix d, Rcpp::IntegerVector positions) {
     splitter *s = new splitter(d);                                     // define the splitter object s
     for (int i=0; i<positions.size(); i++) s->split(positions[i]-1);   // split at positions
+    // change the position on the leaves to the max position
+    int edge_pos = positions[1]>positions[0]?positions[positions.size()-1]:positions[0]-2;
     Rcpp::XPtr< splitter > pt(s, true);                                // get pointer as SEXP
     return pt;
 }
