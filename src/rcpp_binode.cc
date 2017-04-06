@@ -190,26 +190,40 @@ void binode::recursively_get_coords(Rcpp::NumericMatrix &coords, int &index) {
   }
 }
 
-std::pair<double, double> binode::recurse_calculate_ind_top_bottom(const Rcpp::IntegerVector &id) {
+std::pair<double, double> binode::recurse_calculate_id_top_bottom(const Rcpp::IntegerVector &id) {
   std::pair<double, double> rangeleft, rangeright;
   
   if (left->isleaf()) {
-    rangeleft = left->range;
+    rangeleft = left->id_range;
+    //Rprintf("leaf left - ");
   } else {
-    rangeleft = left->recurse_calculate_ind_top_bottom(id);
+    rangeleft = left->recurse_calculate_id_top_bottom(id);
   }
   
   if (right->isleaf()) {
-    rangeright = right->range;
+    //Rprintf("leaf right - ");
+    
+    rangeright = right->id_range;
   } else {
-    rangeright = right->recurse_calculate_ind_top_bottom(id);
+    rangeright = right->recurse_calculate_id_top_bottom(id);
   }
-  double midpoint
-  double halfrange = labels.size()/2.0;
-  double mid = (rangeright.second+rangeleft.first)/2.0;
-  range.first = mid-halfrange;
-  range.second= mid+halfrange;
-  return range;
+  Rprintf("range %g, %g: left (%g, %g) [%g, %g]       right(%g, %g) [%g, %g]\n", 
+          range.first, range.second,
+          rangeleft.first, rangeleft.second, 
+          left->range.first, left->range.second,
+          rangeright.first, rangeright.second,
+          right->range.first, right->range.second);
+  // don't need to calculate the numbers here, we have this from the
+  // ranges below.  These are always in the middle, we just need to move
+  // it to be in the middle of this section.  To do this I need do calculations
+  // around the range for all the samples.
+  
+  double breakpoint = range.first + left->height();
+  
+  id_range.first = breakpoint - rangeleft.second + rangeleft.first;
+  id_range.second = breakpoint + rangeright.second-rangeright.first;
+ 
+  return id_range;
 }
 
 

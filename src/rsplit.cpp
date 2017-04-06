@@ -305,4 +305,20 @@ Rcpp::NumericVector qtrait_statistics(SEXP ptr, Rcpp::NumericVector qtrait, cons
     Rcpp::stop("pickstat must be one of 'Z', 'A', 'N' or 'P'");
   }
 }
+
+
+/*** R
+library(rcppsnptree)
+ data("snptreeExample")
+ a <- simple_split(haps, position)
+ p <- get_phylo(a)
+ nleaves(a)
+ cases <- 0:999
+ ccl <- case_control_leaves(a,cases)
+ colSums(ccl)
+ cases <- 4001:4362
+ ccl <- case_control_leaves(a,cases)
+ colSums(ccl)
+ leaves <- leaf_count(a)
+*/
   

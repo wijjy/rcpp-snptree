@@ -40,6 +40,7 @@ template <class T> class NLRIterator;
  */
 class binode {
 public:
+  // constructors
   binode(const std::vector<int> &a, binode *father=0):
     left(0), right(0), up(father), position(-1), labels(a) {}
   /** Print the labels at a node                                           */
@@ -48,7 +49,7 @@ public:
     return o;
   }
   std::pair<double, double> recurse_calculate_top_bottom();
-  std::pair<double, double> recurse_calculate_ind_top_bottom(const Rcpp::IntegerVector &id);
+  std::pair<double, double> recurse_calculate_id_top_bottom(const Rcpp::IntegerVector &id);
   
   std::pair<int,int> RecurseLeftRightDistances(const std::vector<int> &Cases);
   std::vector<int>  RecurseCherries(const std::vector<int> &Cases);
@@ -119,6 +120,12 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
    */
   double height() const {
     return(range.second-range.first);
+  }
+  /** What is the "height" of the node
+   * 
+   */
+  double id_height() const {
+    return(id_range.second-id_range.first);
   }
   
   /** is the node a leaf?                                                   */
@@ -532,8 +539,34 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
    * which have already been calculated                                   */
 
    double midpoint() const {
-     return range.first+(range.first-range.second)/2.0;
+     return (range.first+range.second)/2.0;
    }
+  /** return the range as a NumericVector  */
+  Rcpp::NumericVector get_range() const {
+    Rcpp::NumericVector xx(2);
+    xx[0] = range.first;
+    xx[1] = range.second;
+    return xx;
+  }
+  /** return the range as a NumericVector  */
+  Rcpp::NumericVector get_id_range() const {
+    Rcpp::NumericVector xx(2);
+    xx[0] = id_range.first;
+    xx[1] = id_range.second;
+    return xx;
+  }
+  Rcpp::List list_node() const {
+    return Rcpp::List::create(Rcpp::Named("position")=position,
+                        Rcpp::Named("range")=get_range(),
+                        Rcpp::Named("id_range")=get_id_range());
+  }
+  /** Is this a left branch?   */
+  bool is_left() const {
+    if (up==0) return false;
+    if (up->left==this)
+      return true;
+    return false;
+  }
 public:
   /** The data                                                                        */
   binode *left;
@@ -544,6 +577,7 @@ public:
   Rcpp::IntegerMatrix distance;   /** Distances for tree distance calculations    */
   int localCC[2];
   std::pair<double, double> range;
+  std::pair<double, double> id_range;
 };
 
 
@@ -653,6 +687,8 @@ public:
   T *operator *() const {
     return current;
   }
+
+  
 private:
   /** Go to the next node                                 */
   void next() {

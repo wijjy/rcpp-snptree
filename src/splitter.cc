@@ -31,10 +31,10 @@ bool mismatch(vector<T> &labels, T *cases, int nc)
 }
 
 /** Note that both of these should be sorted                               */
-int count_intersection(vector<int> &a, Rcpp::IntegerVector &b)
+int count_intersection(vector<int> &a, const Rcpp::IntegerVector &b)
 {
   std::vector<int>::iterator al=a.end(),ii=a.begin();
-  Rcpp::IntegerVector::iterator bl=b.end(),jj=b.begin();
+  Rcpp::IntegerVector::const_iterator bl=b.end(),jj=b.begin();
   int count=0;
   while (ii!=al && jj!=bl) {
     if (*ii<*jj) ++ii;
@@ -206,7 +206,7 @@ void splitter::getNodesPositions(std::vector<int> &pos)
 
 /** Get the number of cases and controls at the leaves - this should be in 
 * lexical search order */
-void splitter::getCaseControlLeaves(Rcpp::IntegerMatrix &ncc, Rcpp::IntegerVector &cases) 
+void splitter::getCaseControlLeaves(Rcpp::IntegerMatrix &ncc, const Rcpp::IntegerVector &cases) 
 {
   NLRIterator<binode> ii(root_);
   ii.nextLeaf();   // the root can never be a leaf
@@ -353,25 +353,21 @@ void splitter::calculate_top_bottom(double gap) {
 
 
 /** Calculate the top and bottom for a subset of the tree                      */
-void splitter::calculate_ind_top_bottom( Rcpp::IntegerVector ind, double gap) {
+void splitter::calculate_id_top_bottom( const Rcpp::IntegerVector &id) {
   // start by calculating the top and bottom positions for the leaves
-  NLRIterator<binode> ii(root());
-  ii.nextLeaf();                      // the root can never be a leaf
-  double count =count_intersection((*ii)->labels, ind);
-  // put these in the middle for a leaf
-  double midpoint = (*ii)->midpoint();   // get the midpoint of the old value
-  std::pair<double, double> last(midpoint-count/2.0, midpoint+count/2.0);
-  (*ii)->range = last;
-  ii.nextLeaf();
-  while (!ii.isend()) {
-    double count =count_intersection((*ii)->labels, ind);
-    // put these in the middle for a leaf
-    double midpoint = (*ii)->midpoint();   // get the midpoint of the old value
-    (*ii)->range.first  = midpoint-count/2.0;
-    (*ii)->range.second = midpoint+count/2.0;
-    last = (*ii)->range;
-    ii.nextLeaf();
+  std::list<binode *>::iterator ii=begin_leaf();
+  while (ii != end_leaf()) {
+    double count =count_intersection((*ii)->labels, id);
+    if (!(*ii)->is_left()) {
+      (*ii)->id_range.first = (*ii)->range.first;
+      (*ii)->id_range.second = (*ii)->range.first+count;
+    } else {
+      (*ii)->id_range.first = (*ii)->range.second-count;
+      (*ii)->id_range.second = (*ii)->range.second;
+    }
+    ii++;
   }
+
   // now recurse to get the rest of the nodes
-  root_->recurse_calculate_ind_top_bottom(ind);
+  root_->recurse_calculate_id_top_bottom(id);
 }

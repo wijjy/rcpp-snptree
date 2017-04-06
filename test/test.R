@@ -4,7 +4,7 @@ a <- simple_split(haps, position)
 p <- get_phylo()
 nleaves(a)
 cases <- 1:1000
-case_control_leaves(a,cases)
+ccl <- case_control_leaves(a,cases)
 leaves <- leaf_count(a)
 sum(leaves)
 res <- get_coordinates(a, gap=40) 
@@ -12,7 +12,6 @@ table(res)
 res[res[,1]==-1,1] <- max(res[,1])+1 
 plot(range(res[,1]), range(res[,2]), type="n", xlab="", ylab="", axes=TRUE)
 xspline(res[,1], res[,2], shape=res[,3], open=FALSE, col="lightgrey", border=FALSE)
-
 
 
 test_plot <- function(ss, rec, var, centre, nleft, nright, 

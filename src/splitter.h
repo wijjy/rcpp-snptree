@@ -23,7 +23,7 @@ bool mismatch(std::vector<T> &labels, T *cases, int nc);
 template<typename T>
 bool mismatch2(vector<T> &labels, T *cases, int nc);
 
-int count_intersection(vector<int> &a, Rcpp::IntegerVector &b);
+int count_intersection(vector<int> &a, const Rcpp::IntegerVector &b);
 /** Note that both of these should be sorted                               */
 int count_intersection(vector<int> &a, int *cases, int nc);
 
@@ -38,9 +38,9 @@ public:
     :haps(haplotypes),
      samples(haplotypes.nrow()),
      nSNP(haplotypes.ncol()) {
-    vector<int> a(haplotypes.nrow());
-    for (int i=0; i<haplotypes.nrow(); i++) a[i]=i;
-    leaves.push_back(new binode(a));
+    vector<int> root_labels(haplotypes.nrow());
+    for (int i=0; i<haplotypes.nrow(); i++) root_labels[i]=i+1;
+    leaves.push_back(new binode(root_labels));
     root_=leaves.front();
   }
   /** Return a pointer to the root                        */
@@ -61,7 +61,7 @@ public:
    * These values should be in the centre for joins, at the 
    * top fpr left branches and at the top for right branches
    */
-  void calculate_ind_top_bottom(Rcpp::IntegerVector ind, double gap);
+  void calculate_id_top_bottom(const Rcpp::IntegerVector &ind);
   /** Split the haplotypes at a position                  */
   bool split(int position);
   /** Do some splits                                      */
@@ -267,7 +267,7 @@ public:
   /** Get the numbers of cases and controls at the internal nodes and the 
       leaves - in lexical order */
   void getCaseControlNodes(int *ncc, int *cases, int nc,int ninternal);
-  void getCaseControlLeaves(Rcpp::IntegerMatrix &ncc,  Rcpp::IntegerVector &cases);
+  void getCaseControlLeaves(Rcpp::IntegerMatrix &ncc, const Rcpp::IntegerVector &cases);
   /** Get the index of splits for each node - that is which of the SNPs the node was split on  */
   void getNodesPositions(std::vector<int> &pos);
   /** Get the labels at internal nodes in ape format */

@@ -45,20 +45,28 @@ void set_leaf_position(SEXP ptr, double pos) {
 Rcpp::List leaf(SEXP ptr, int index) {
   Rcpp::XPtr< splitter > s(ptr);
   NLRIterator<binode> ii(s->root());
-  ii.nextLeaf();   // the root can never be a leaf
   while (!ii.isend()) {
     if (index==1) {
-       Rcpp::NumericVector range(2);
-      range(0) = (*ii)->range.first;
-      range(1) = (*ii)->range.second;
-      
-      return Rcpp::List::create(Rcpp::Named("position")=(*ii)->position,
-                         Rcpp::Named("range")=range);
+      return (*ii)->list_node();
     }
-    
     ii.nextLeaf();
     index--;
   }
+  return 0;
+}
+// [[Rcpp::export]]
+Rcpp::List node(SEXP ptr, int index) {
+  Rcpp::XPtr< splitter > s(ptr);
+  LRNIterator<binode> ii(s->root());
+  while (!ii.isend()) {
+    if (index==1) {
+      return (*ii)->list_node();
+    }
+    
+    ii.nextInternal();
+    index--;
+  }
+  return 0;
 }
 
 
@@ -76,7 +84,7 @@ void calc_node_ranges(SEXP ptr, double gap) {
  */
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix get_blocks(SEXP ptr, double gap=1) {
+Rcpp::NumericMatrix get_blocks_old(SEXP ptr, double gap=1) {
   Rcpp::XPtr< splitter > s(ptr);
   if (s->root()->range.first==0)
     s->calculate_top_bottom(gap);   // gets the tops and bottoms 
@@ -111,35 +119,31 @@ Rcpp::NumericMatrix get_blocks(SEXP ptr, double gap=1) {
 }
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id, double gap=1) {
+Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id) {
   Rcpp::XPtr< splitter > s(ptr);
-  if (s->root()->range.first==0)
-    s->calculate_ind_top_bottom(id, gap);   // gets the tops and bottoms 
+  s->calculate_id_top_bottom(id);   // gets the tops and bottoms 
   
   int leaves = s->nleaves();
-  Rcpp::NumericMatrix boxes(2*leaves-1, 6);  // last one left for the root if needed
+  Rcpp::NumericMatrix boxes(2*leaves-1, 5);  // last one left for the root if needed
   
   int index=0;
-  NLRIterator<binode> ii(s->root());
-  while (!ii.isend()) {
-    if ((*ii)->isleaf())
-      Rcpp::stop("should never get to a leaf in this function");
+  std::list<binode *>::const_iterator ii=s->begin_internal(); 
+  while (ii!=s->end_internal()) {
+    
     // left
     boxes(index, 0) = (*ii)->position+1;
     boxes(index, 1) = (*ii)->left->position+1;
-    boxes(index, 2) = (*ii)->range.first;
-    boxes(index, 3) = (*ii)->left->range.first;
-    boxes(index, 4) = (*ii)->left->height();
-    boxes(index, 5) = -1.0;     // This is an indicator for up, down etc.
+    boxes(index, 2) = (*ii)->id_range.first;
+    boxes(index, 3) = (*ii)->left->id_range.first;
+    boxes(index, 4) = (*ii)->left->id_height();
     // right
     index++;
     boxes(index, 0) = (*ii)->position+1;
     boxes(index, 1) = (*ii)->right->position+1;
-    boxes(index, 2) = (*ii)->range.first+(*ii)->left->height();
-    boxes(index, 3) = (*ii)->right->range.first;
-    boxes(index, 4) = (*ii)->right->height();
-    boxes(index, 5) = 1.0;
-    ii.nextInternal();
+    boxes(index, 2) = (*ii)->id_range.first+(*ii)->left->id_height();
+    boxes(index, 3) = (*ii)->right->id_range.first;
+    boxes(index, 4) = (*ii)->right->id_height();
+    ii++;
     index++;
   }
   return boxes;
@@ -147,7 +151,7 @@ Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id, double gap=1
 
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix get_blocks2(SEXP ptr, double gap=1) {
+Rcpp::NumericMatrix get_blocks(SEXP ptr, double gap=1) {
   Rcpp::XPtr< splitter > s(ptr);
   if (s->root()->range.first==0)
     s->calculate_top_bottom(gap);   // gets the tops and bottoms 
@@ -179,37 +183,80 @@ Rcpp::NumericMatrix get_blocks2(SEXP ptr, double gap=1) {
 }
  
 /*** R
-plot_block <- function(v,  col="lightgrey", ...) {
+test <- function() {
+  library(rcppsnptree)
+  data(snptreeExample)
+  plot_block <- function(v,  col="lightgrey", ...) {
+    x <- c(v[1], (3*v[1]+v[2])/4, v[2], v[2]     ,    (3*v[1]+v[2])/4, v[1])
+    y <- c(v[3],   (v[3]+v[4])/2, v[4], v[4]+v[5], (v[3]+v[4])/2+v[5], v[3]+v[5])
+    s <- c(   0,              -1,    0,         0,                 -1,    0)
+    
+    xspline(x,y, col=col, shape=s, border="darkgrey", open=FALSE, ...)
+  }
+
+  
+  split_right <- simple_split(haps, 1:24)
+  set_leaf_position(split_right, 25)
+  calc_node_ranges(split_right, 100)
+  
+  id <- sort(sample(nrow(haps), 1000))
+  blocks_right <- get_blocks(split_right, gap=100)
+  id_blocks_right <- get_id_blocks(split_right, id)
+  print(leaf(split_right, 3))
+  print(leaf(split_right, 4))
+  print(node(split_right, 4))
+  
+  
+  blocks_right <- blocks_right[-nrow(blocks_right), ]
+  id_blocks_right <-  id_blocks_right[-nrow(id_blocks_right), ]
+  
+  plot(range(blocks_right[,1:2]), range(c(blocks_right[,3:4]),
+             c(blocks_right[,3:4])+blocks_right[,5]), 
+             axes=FALSE, xlab="", ylab="", type="n")
+  
+  apply(blocks_right, 1, plot_block)
+  apply(id_blocks_right, 1, plot_block, col="red")
+  
+  axis(1)
+}
+test()
+
+plot_block <- function(v,  col="lightgrey" ...) {
   x <- c(v[1], v[2], v[2], v[1])
   y <- c(v[3], v[4], v[4]+v[5], v[3]+v[5])
   xspline(x,y, col=col, border=col, shape=0, ...)
 }
-plot_block <- function(v,  col="lightgrey", ...) {
+plot_block <- function(v,  col="lightgrey", border="darkgrey", ...) {
     x <- c(v[1], (3*v[1]+v[2])/4, v[2], v[2]     ,    (3*v[1]+v[2])/4, v[1])
     y <- c(v[3],   (v[3]+v[4])/2, v[4], v[4]+v[5], (v[3]+v[4])/2+v[5], v[3]+v[5])
     s <- c(   0,              -1,    0,         0,                 -1,    0)
 
-  xspline(x,y, col=col, shape=s, border="darkgrey", open=FALSE, ...)
+  xspline(x,y, col=col, shape=s, border=border, open=FALSE, ...)
 }
 library(rcppsnptree)
 data(snptreeExample)
 
-split_right <- simple_split(haps, 1:24)
+split_right <- simple_split(haps, 1:6)
 set_leaf_position(split_right, 25)
 calc_node_ranges(split_right, 100)
-node(split_right, 3)
+leaf(split_right, 3)
 
 split_left <- simple_split(haps,12:1)
 set_leaf_position(split_left, 0)
 calc_node_ranges(split_left, 100)
-node(split_left, 3)
-
-
+leaf(split_left, 3)
+node(split_right, 6)
+id <- sort(sample(nrow(haps), 1000))
 
 blocks_right <- get_blocks(split_right, gap=100)
-blocks_right2 <- get_blocks2(split_right, gap=100)
+id_blocks_right <- get_id_blocks(split_right, id)
 blocks_left <- get_blocks(split_left, gap=100)
+leaf(split_right, 3)
+
+
 blocks_right <- blocks_right[-nrow(blocks_right), ]
+id_blocks_right <-  id_blocks_right[-nrow(id_blocks_right), ]
+
 blocks_left <-  blocks_left[-nrow(blocks_left), ]
 
 plot(range(blocks_left[,1:2]), range(c(blocks_left[,3:4]),
@@ -231,7 +278,9 @@ plot(range(blocks_right[,1:2]), range(c(blocks_right[,3:4]),
                                      c(blocks_right[,3:4])+blocks_right[,5]), 
      axes=FALSE, xlab="", ylab="", type="n")
 
-apply(blocks_right2, 1, plot_block)
+apply(blocks_right, 1, plot_block)
+apply(id_blocks_right, 1, plot_block, col="red", border="red")
+
 axis(1)
 plot_block(blocks[26,])
 polygon(boxes[,1], boxes[,2])
