@@ -190,5 +190,26 @@ void binode::recursively_get_coords(Rcpp::NumericMatrix &coords, int &index) {
   }
 }
 
+std::pair<double, double> binode::recurse_calculate_ind_top_bottom(const Rcpp::IntegerVector &id) {
+  std::pair<double, double> rangeleft, rangeright;
+  
+  if (left->isleaf()) {
+    rangeleft = left->range;
+  } else {
+    rangeleft = left->recurse_calculate_ind_top_bottom(id);
+  }
+  
+  if (right->isleaf()) {
+    rangeright = right->range;
+  } else {
+    rangeright = right->recurse_calculate_ind_top_bottom(id);
+  }
+  double midpoint
+  double halfrange = labels.size()/2.0;
+  double mid = (rangeright.second+rangeleft.first)/2.0;
+  range.first = mid-halfrange;
+  range.second= mid+halfrange;
+  return range;
+}
 
 

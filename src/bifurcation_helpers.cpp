@@ -42,7 +42,7 @@ void set_leaf_position(SEXP ptr, double pos) {
  */
 
 // [[Rcpp::export]]
-Rcpp::List node(SEXP ptr, int index) {
+Rcpp::List leaf(SEXP ptr, int index) {
   Rcpp::XPtr< splitter > s(ptr);
   NLRIterator<binode> ii(s->root());
   ii.nextLeaf();   // the root can never be a leaf
@@ -60,6 +60,8 @@ Rcpp::List node(SEXP ptr, int index) {
     index--;
   }
 }
+
+
   
 // [[Rcpp::export]]
 void calc_node_ranges(SEXP ptr, double gap) {
@@ -79,8 +81,6 @@ Rcpp::NumericMatrix get_blocks(SEXP ptr, double gap=1) {
   if (s->root()->range.first==0)
     s->calculate_top_bottom(gap);   // gets the tops and bottoms 
   
-    
-
   int leaves = s->nleaves();
   Rcpp::NumericMatrix boxes(2*leaves-1, 6);  // last one left for the root if needed
   
@@ -110,6 +110,40 @@ Rcpp::NumericMatrix get_blocks(SEXP ptr, double gap=1) {
   return boxes;
 }
 
+// [[Rcpp::export]]
+Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id, double gap=1) {
+  Rcpp::XPtr< splitter > s(ptr);
+  if (s->root()->range.first==0)
+    s->calculate_ind_top_bottom(id, gap);   // gets the tops and bottoms 
+  
+  int leaves = s->nleaves();
+  Rcpp::NumericMatrix boxes(2*leaves-1, 6);  // last one left for the root if needed
+  
+  int index=0;
+  NLRIterator<binode> ii(s->root());
+  while (!ii.isend()) {
+    if ((*ii)->isleaf())
+      Rcpp::stop("should never get to a leaf in this function");
+    // left
+    boxes(index, 0) = (*ii)->position+1;
+    boxes(index, 1) = (*ii)->left->position+1;
+    boxes(index, 2) = (*ii)->range.first;
+    boxes(index, 3) = (*ii)->left->range.first;
+    boxes(index, 4) = (*ii)->left->height();
+    boxes(index, 5) = -1.0;     // This is an indicator for up, down etc.
+    // right
+    index++;
+    boxes(index, 0) = (*ii)->position+1;
+    boxes(index, 1) = (*ii)->right->position+1;
+    boxes(index, 2) = (*ii)->range.first+(*ii)->left->height();
+    boxes(index, 3) = (*ii)->right->range.first;
+    boxes(index, 4) = (*ii)->right->height();
+    boxes(index, 5) = 1.0;
+    ii.nextInternal();
+    index++;
+  }
+  return boxes;
+}
 
 
 // [[Rcpp::export]]

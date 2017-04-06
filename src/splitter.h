@@ -55,6 +55,13 @@ public:
    * for drawing.  gap is in proportion to unity.  
   */
   void calculate_top_bottom(double gap);
+  /** calculate the top and bottom positions of each node 
+   * for a subset of the data marked by individual.
+   * gap is in proportion to unity.  
+   * These values should be in the centre for joins, at the 
+   * top fpr left branches and at the top for right branches
+   */
+  void calculate_ind_top_bottom(Rcpp::IntegerVector ind, double gap);
   /** Split the haplotypes at a position                  */
   bool split(int position);
   /** Do some splits                                      */
@@ -340,6 +347,7 @@ private:
   Rcpp::IntegerMatrix haps;                 /// A pointer to a matrix of the data
   int samples, nSNP;                        /// the number of samples and SNPs
 };
+
 
 
 

@@ -349,3 +349,29 @@ void splitter::calculate_top_bottom(double gap) {
   // now recurse to get the rest of the nodes
   root_->recurse_calculate_top_bottom();
 }
+
+
+
+/** Calculate the top and bottom for a subset of the tree                      */
+void splitter::calculate_ind_top_bottom( Rcpp::IntegerVector ind, double gap) {
+  // start by calculating the top and bottom positions for the leaves
+  NLRIterator<binode> ii(root());
+  ii.nextLeaf();                      // the root can never be a leaf
+  double count =count_intersection((*ii)->labels, ind);
+  // put these in the middle for a leaf
+  double midpoint = (*ii)->midpoint();   // get the midpoint of the old value
+  std::pair<double, double> last(midpoint-count/2.0, midpoint+count/2.0);
+  (*ii)->range = last;
+  ii.nextLeaf();
+  while (!ii.isend()) {
+    double count =count_intersection((*ii)->labels, ind);
+    // put these in the middle for a leaf
+    double midpoint = (*ii)->midpoint();   // get the midpoint of the old value
+    (*ii)->range.first  = midpoint-count/2.0;
+    (*ii)->range.second = midpoint+count/2.0;
+    last = (*ii)->range;
+    ii.nextLeaf();
+  }
+  // now recurse to get the rest of the nodes
+  root_->recurse_calculate_ind_top_bottom(ind);
+}

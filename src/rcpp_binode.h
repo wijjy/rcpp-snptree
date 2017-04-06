@@ -48,6 +48,8 @@ public:
     return o;
   }
   std::pair<double, double> recurse_calculate_top_bottom();
+  std::pair<double, double> recurse_calculate_ind_top_bottom(const Rcpp::IntegerVector &id);
+  
   std::pair<int,int> RecurseLeftRightDistances(const std::vector<int> &Cases);
   std::vector<int>  RecurseCherries(const std::vector<int> &Cases);
   std::vector<double>  RecurseSumHeight(const std::vector<int> &Cases,int CC[2]);
@@ -529,7 +531,9 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
   /** calculate the tops and bottoms of the nodes relative to the leaves, 
    * which have already been calculated                                   */
 
-  
+   double midpoint() const {
+     return range.first+(range.first-range.second)/2.0;
+   }
 public:
   /** The data                                                                        */
   binode *left;
