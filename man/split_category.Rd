@@ -8,20 +8,16 @@ Produce a bifurcating split of haplotypes that each have a category.}
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-split_category(d, categories, SplitPositions, positions, quiet = TRUE)
+split_category(haplotypes, SplitPositions, categories)
 split_qtrait(d, qtrait, SplitPositions, positions, quiet = TRUE)
 
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-    \item{d}{ A matrix of haplotypes with samples by row }
+    \item{haplotypes}{ A matrix of haplotypes with samples by row }
   \item{categories}{A vector of a categories for each haplotype. }
 \item{qtrait}{ vector giving the continuous trait associated with each individual.}
  \item{SplitPositions}{ The order in which to split the haplotypes }
-  \item{positions}{ Positions for the sites given in \code{d} }
-  \item{quiet}{
-if \code{quiet} is \code{FALSE}, then no extra information is printed from this function.
-}
 }
 \details{
 %%  ~~ If necessary, more details than the description above ~~
@@ -52,7 +48,7 @@ A list of class \code{splitqtrait} or \code{splitcategory} with the following el
 data(snptreeExample)
 
 catData <- sample(1:5, nrow(haps), replace=T)
-category <- split_category(haps, catData)
+category <- split_category(haps, 1:ncol(haps), catData)
 class(category)
 plot(category)
 

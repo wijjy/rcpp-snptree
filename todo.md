@@ -10,7 +10,7 @@ Improvements
 * Integration with `ms` for simulations
 * Integration with my own simulations
 * Get plotting working in both directions
-* Can I integrate the PAC idea into tree building a tree viewing
+* Can I integrate the PAC idea into tree building and tree viewing
 
 ## List
 

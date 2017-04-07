@@ -86,8 +86,7 @@ Rcpp::NumericMatrix  leaf_positions(SEXP ptr, double gap=1) {
   Rcpp::XPtr< splitter > s(ptr);
   int leaves = s->nleaves();
   Rcpp::NumericMatrix ypositions(leaves);
-  NLRIterator<binode> ii(s->root());
-  ii.nextLeaf();   // the root can never be a leaf
+  LRNIterator<binode> ii(s->root());
   ypositions(0, 0) = 0;
   ypositions(0, 1) = (*ii)->labels.size();
   ii.nextLeaf();
@@ -106,8 +105,7 @@ Rcpp::NumericMatrix node_positions(SEXP ptr, double gap=1) {
   Rcpp::XPtr< splitter > s(ptr);
   int leaves = s->nleaves();
   Rcpp::NumericMatrix ypositions(leaves);
-  NLRIterator<binode> ii(s->root());
-  ii.nextLeaf();   // the root can never be a leaf
+  LRNIterator<binode> ii(s->root());
   ypositions(0, 0) = 0;
   ypositions(0, 1) = (*ii)->labels.size();
   ii.nextLeaf();
@@ -307,6 +305,56 @@ Rcpp::NumericVector qtrait_statistics(SEXP ptr, Rcpp::NumericVector qtrait, cons
 }
 
 
+
+
+// [[Rcpp::export]]
+Rcpp::List split_category(Rcpp::IntegerMatrix data, 
+                              Rcpp::IntegerVector positions, 
+                              Rcpp::IntegerVector categories)
+{ 
+  int mx=Rcpp::max(categories);
+  Rprintf("mx = %d\n", mx);
+  splitter s(data);                                                // define the splitter object s
+  for (int i=0;i< positions.size();i++) s.split(positions[i]-1);   // split at positions
+  
+  std::vector<std::pair<int,int> > edges;                          // set up date structure for edges
+  std::vector<std::vector<int> > labels;                           // and for labels  
+  
+  s.apesplit(edges, labels);
+  
+  int nedges=static_cast<int>(edges.size());
+  Rcpp::IntegerMatrix edge(nedges, 2);
+  for (int i=0; i<nedges; i++) {
+    edge(i, 0) = edges[i].first;
+    edge(i, 1) = edges[i].second;
+  }
+
+  Rcpp::IntegerMatrix category_counts(s.nleaves(), mx);
+  for (size_t ii=0; ii<labels.size(); ii++) {
+    for (size_t jj=0; jj<labels[ii].size(); jj++) {
+      category_counts.at(ii, categories[labels[ii][jj]]-1) += 1; 
+    }
+  }
+
+  // now try to get the lengths.  Note that the centre of this split is positions[0].
+  std::vector<int> nodePos;
+  s.getNodesPositions(nodePos);
+  Rcpp::IntegerVector nodepos(nodePos.begin(), nodePos.end());
+  for (size_t ii=0;ii<nodePos.size();ii++) nodepos[ii]=nodePos[ii];
+  
+  Rcpp::List L = Rcpp::List::create(
+    Rcpp::Named("edge") = edge,
+    Rcpp::Named("tip.label") = Rcpp::seq_len(s.nleaves()),
+    Rcpp::Named("Nnode") = s.nleaves()-1,
+    Rcpp::Named("nodepos") = nodepos,
+    Rcpp::Named("leaf_categories") = category_counts
+  );
+  L.attr("class") ="phylo";
+  return L;
+}
+
+
+
 /*** R
 library(rcppsnptree)
  data("snptreeExample")
@@ -324,5 +372,10 @@ library(rcppsnptree)
  ccl <- case_control_leaves(a,cases)
  colSums(ccl)   # should be 362 and 4000
  leaves <- leaf_count(a)
+ ## Categories
+ 
+ categ <- sample(5, size=nrow(haps), replace=TRUE)
+ ct_tree <- GetCategorySplit(haps, 1:24, categ)
+ 
 */
   

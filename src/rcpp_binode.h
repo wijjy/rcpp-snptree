@@ -578,6 +578,8 @@ public:
   int localCC[2];
   std::pair<double, double> range;
   std::pair<double, double> id_range;
+  
+  int index, LRN_index;           // a numeric index for the nodes, when needed
 };
 
 

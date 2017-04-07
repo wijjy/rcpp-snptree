@@ -207,12 +207,12 @@ std::pair<double, double> binode::recurse_calculate_id_top_bottom(const Rcpp::In
   } else {
     rangeright = right->recurse_calculate_id_top_bottom(id);
   }
-  Rprintf("range %g, %g: left (%g, %g) [%g, %g]       right(%g, %g) [%g, %g]\n", 
-          range.first, range.second,
-          rangeleft.first, rangeleft.second, 
-          left->range.first, left->range.second,
-          rangeright.first, rangeright.second,
-          right->range.first, right->range.second);
+  //Rprintf("range %g, %g: left (%g, %g) [%g, %g]       right(%g, %g) [%g, %g]\n", 
+  //        range.first, range.second,
+  //        rangeleft.first, rangeleft.second, 
+  //        left->range.first, left->range.second,
+  //        rangeright.first, rangeright.second,
+  //        right->range.first, right->range.second);
   // don't need to calculate the numbers here, we have this from the
   // ranges below.  These are always in the middle, we just need to move
   // it to be in the middle of this section.  To do this I need do calculations
@@ -225,5 +225,7 @@ std::pair<double, double> binode::recurse_calculate_id_top_bottom(const Rcpp::In
  
   return id_range;
 }
+
+
 
 

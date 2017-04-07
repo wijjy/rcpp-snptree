@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include "rcpp_binode.h"
 #include "testStats.h"
-//#include "util.h"
+#include "util.h"
 
 using std::list;
 using std::ostream;
@@ -15,17 +15,6 @@ using std::vector;
 using std::pair;
 using std::stack;
 
-bool SNPmatch( const Rcpp::IntegerMatrix &hap, const vector<int> &rows, int col);
-
-template<typename T>
-bool mismatch(std::vector<T> &labels, T *cases, int nc);
-
-template<typename T>
-bool mismatch2(vector<T> &labels, T *cases, int nc);
-
-int count_intersection(vector<int> &a, const Rcpp::IntegerVector &b);
-/** Note that both of these should be sorted                               */
-int count_intersection(vector<int> &a, int *cases, int nc);
 
 /** A class to create a splitting haplotype tree *
  * The constructor just creates the root.  
@@ -43,6 +32,16 @@ public:
     leaves.push_back(new binode(root_labels));
     root_=leaves.front();
   }
+  /** Constructor for the splitter class                 */
+  splitter(const splitter &samedata) 
+    :haps(samedata.haps),
+     samples(samedata.samples),
+     nSNP(samedata.nSNP) {
+    vector<int> root_labels(samples);
+    for (int i=0; i<samples; i++) root_labels[i]=i;
+    leaves.push_back(new binode(root_labels));
+    root_=leaves.front();
+  }
   /** Return a pointer to the root                        */
   binode *root() const {
     return root_;
@@ -50,6 +49,28 @@ public:
   /** Return the number of leaves in a tree               */
   int nleaves() const {
     return leaves.size();
+  }
+  /** index tree                                          */
+  void index_tree() {
+    int count=0;
+    
+    std::list<binode *>::iterator bi=begin_leaf();
+    while (bi!=end_leaf()) {
+      (*bi)->index=count++;
+    }
+    bi=begin_internal();
+    while (bi!=end_internal()) {
+      (*bi)->index=count++;
+    }
+  }
+  /** LRN index tree                                          */
+  void LRN_index_tree() {
+    int count=0;
+    LRNIterator<binode> ii(root_); 
+    while (!ii.isend()) {
+      (*ii) -> LRN_index = count++;
+      ++ii;
+    }
   }
   /** calculate the top and bottom positions of each node 
    * for drawing.  gap is in proportion to unity.  
@@ -66,7 +87,8 @@ public:
   bool split(int position);
   /** Do some splits                                      */
   bool fullsplit(); 
-  /** Print the labels at all the nodes                   */
+
+  /** Print the labels at all the nodes                    */
   ostream & printLeaves(ostream &o) {
       list<binode *>::iterator ii=leaves.begin();
       while (ii!=leaves.end()) {
@@ -340,6 +362,8 @@ public:
   std::list<binode *>::const_iterator end_internal() const {
     return internal.end();
   }
+  binode *first_leaf_matching(const Rcpp::IntegerVector targetPositions, 
+                                    const    Rcpp::IntegerVector &target);
 private:
   binode *root_;                            /// The root of the tree
   std::list<binode *> leaves;               /// A list of leaves

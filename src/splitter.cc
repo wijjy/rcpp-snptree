@@ -1,70 +1,6 @@
 #include "splitter.h"
+#include "util.h"
 
-/** Do all the SNPs at position col for rows rows match?                         */
-bool SNPmatch(const Rcpp::IntegerMatrix &hap, const vector<int> &rows, int col) 
-{
-  int SNP = hap(rows[0], col);
-  for (size_t j=0; j<rows.size(); j++) {
-    if (hap.at(rows.at(j), col) != SNP) return false;      // BOUNDS CHECK
-  }
-  return true;
-} 
-/** Are any of the labels not cases?                                             */
-template<typename T>
-bool mismatch(vector<T> &labels, T *cases, int nc)
-{
-  typename vector<T>::iterator curr=labels.begin();
-  typename vector<T>::iterator end=labels.end();
-  typename vector<T>::iterator fo=std::find_first_of(curr,end,cases,cases+nc);
-  if (fo==end) return false; // no labels in cases - all controls
-  if (fo!=curr) return true; // first label not a case
-  curr++;
-  
-  while (curr != end) {
-    // find the first label (from curr) that is in the cases
-    vector<int>::iterator fo=std::find_first_of(curr,end,cases,cases+nc);
-    if (fo!=curr)  //the first label is not  a case
-      return true;
-    curr++;
-  }
-  //curr==end so all labels must be in cases!
-  return false;
-}
-
-/** Note that both of these should be sorted                               */
-int count_intersection(vector<int> &a, const Rcpp::IntegerVector &b)
-{
-  std::vector<int>::iterator al=a.end(),ii=a.begin();
-  Rcpp::IntegerVector::const_iterator bl=b.end(),jj=b.begin();
-  int count=0;
-  while (ii!=al && jj!=bl) {
-    if (*ii<*jj) ++ii;
-    else if (*jj<*ii) ++jj;
-    else {
-      count++;
-      ii++;
-      jj++;
-    }
-  }
-  return count;
-} 
-/** Note that both of these should be sorted                               */
-int count_intersection(vector<int> &a, int *cases, int nc)
-{
-  std::vector<int>::iterator al=a.end(),ii=a.begin();
-  int *jj=cases,*bl=cases+nc;
-  int count=0;
-  while (ii!=al && jj!=bl) {
-    if (*ii<*jj) ++ii;
-    else if (*jj<*ii) ++jj;
-    else {
-      count++;
-      ii++;
-      jj++;
-    }
-  }
-  return count;
-}
 
 /** Function to split the all nodes with >1  
  repeated use of this will produce full splits   */
@@ -143,6 +79,9 @@ bool splitter::split(int position) {
   leaves.splice(leaves.begin(), toadd);
   return change;
 }
+
+
+
 
 
 void splitter::apesplit(int *edges, int *ncc, int *cases,int nc)
@@ -372,4 +311,16 @@ void splitter::calculate_id_top_bottom( const Rcpp::IntegerVector &id) {
 
   // now recurse to get the rest of the nodes
   root_->recurse_calculate_id_top_bottom(id);
+}
+
+
+binode *splitter::first_leaf_matching(const Rcpp::IntegerVector targetPositions, 
+                                      const Rcpp::IntegerVector &target) {
+  std::list<binode *>::iterator bi=begin_leaf();
+  while (bi != end_leaf()) { 
+    if (matches_hap(haps[(*bi)->labels[0]], target, targetPositions ))
+      return *bi;
+  }  
+  Rcpp::stop("doesn't match any terminal node");
+  return 0;
 }

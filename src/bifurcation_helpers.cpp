@@ -44,7 +44,7 @@ void set_leaf_position(SEXP ptr, double pos) {
 // [[Rcpp::export]]
 Rcpp::List leaf(SEXP ptr, int index) {
   Rcpp::XPtr< splitter > s(ptr);
-  NLRIterator<binode> ii(s->root());
+  LRNIterator<binode> ii(s->root());
   while (!ii.isend()) {
     if (index==1) {
       return (*ii)->list_node();
@@ -62,7 +62,6 @@ Rcpp::List node(SEXP ptr, int index) {
     if (index==1) {
       return (*ii)->list_node();
     }
-    
     ii.nextInternal();
     index--;
   }
@@ -148,8 +147,10 @@ Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id) {
   }
   return boxes;
 }
-
-
+/** I now have a particular order for  the nodes.  All the leaves the
+ * all the internal ones, in the order they are produced (which is not
+ * the same as any tree traversal order)
+ */ 
 // [[Rcpp::export]]
 Rcpp::NumericMatrix get_blocks(SEXP ptr, double gap=1) {
   Rcpp::XPtr< splitter > s(ptr);
@@ -181,45 +182,28 @@ Rcpp::NumericMatrix get_blocks(SEXP ptr, double gap=1) {
   }
   return boxes;
 }
+
+
+// [[Rcpp::export]]
+Rcpp::IntegerVector individuals_matching_haplotype(SEXP ptr, const Rcpp::IntegerVector &haplotype, 
+                                  const Rcpp::IntegerVector &position) {
+  // haplotype can have 0, 1 and -1 (to act as anything)
+  // Get the original tree whihc is to act as a scaffold
+  Rcpp::XPtr< splitter > s(ptr);
+  
+  // now get another tree just with the required nodes.  special split just one way
+  splitter tmp(*s);                           // define the temporary spliiter object
+  for (int i=0;i< position.size();i++) {
+    if (haplotype[position[i]] != -1) 
+      tmp.split(position[i]-1);   // split at positions
+  }
+  binode *bl = tmp.first_leaf_matching(position, haplotype);
+  return Rcpp::IntegerVector(bl->labels.begin(), bl->labels.end())-1;
+  
+}
+
  
 /*** R
-test <- function() {
-  library(rcppsnptree)
-  data(snptreeExample)
-  plot_block <- function(v,  col="lightgrey", ...) {
-    x <- c(v[1], (3*v[1]+v[2])/4, v[2], v[2]     ,    (3*v[1]+v[2])/4, v[1])
-    y <- c(v[3],   (v[3]+v[4])/2, v[4], v[4]+v[5], (v[3]+v[4])/2+v[5], v[3]+v[5])
-    s <- c(   0,              -1,    0,         0,                 -1,    0)
-    
-    xspline(x,y, col=col, shape=s, border="darkgrey", open=FALSE, ...)
-  }
-
-  
-  split_right <- simple_split(haps, 1:24)
-  set_leaf_position(split_right, 25)
-  calc_node_ranges(split_right, 100)
-  
-  id <- sort(sample(nrow(haps), 1000))
-  blocks_right <- get_blocks(split_right, gap=100)
-  id_blocks_right <- get_id_blocks(split_right, id)
-  print(leaf(split_right, 3))
-  print(leaf(split_right, 4))
-  print(node(split_right, 4))
-  
-  
-  blocks_right <- blocks_right[-nrow(blocks_right), ]
-  id_blocks_right <-  id_blocks_right[-nrow(id_blocks_right), ]
-  
-  plot(range(blocks_right[,1:2]), range(c(blocks_right[,3:4]),
-             c(blocks_right[,3:4])+blocks_right[,5]), 
-             axes=FALSE, xlab="", ylab="", type="n")
-  
-  apply(blocks_right, 1, plot_block)
-  apply(id_blocks_right, 1, plot_block, col="red")
-  
-  axis(1)
-}
-test()
 
 plot_block <- function(v,  col="lightgrey" ...) {
   x <- c(v[1], v[2], v[2], v[1])

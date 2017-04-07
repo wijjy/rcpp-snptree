@@ -21,5 +21,5 @@ add_block <- function(blocks, num, ...) {
 recolour_block <- function(blocks, col="green") {
   w <- locate_block(blocks)
   add_block(blocks, w, col=col, border=col)
-  
 }
+
