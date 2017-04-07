@@ -5,11 +5,11 @@
 #include "ijw_rand.h" 
 
 // [[Rcpp::export]]
-SEXP simple_split(Rcpp::IntegerMatrix d, Rcpp::IntegerVector positions) {
-    splitter *s = new splitter(d);                                     // define the splitter object s
+SEXP simple_split(Rcpp::IntegerMatrix haplotypes, Rcpp::IntegerVector positions) {
+    splitter *s = new splitter(haplotypes);                            // define the splitter object s
     for (int i=0; i<positions.size(); i++) s->split(positions[i]-1);   // split at positions
     // change the position on the leaves to the max position
-    int edge_pos = positions[1]>positions[0]?positions[positions.size()-1]:positions[0]-2;
+    // int edge_pos = positions[1]>positions[0]?positions[positions.size()-1]:positions[0]-2;
     Rcpp::XPtr< splitter > pt(s, true);                                // get pointer as SEXP
     return pt;
 }
@@ -312,13 +312,17 @@ library(rcppsnptree)
  data("snptreeExample")
  a <- simple_split(haps, position)
  p <- get_phylo(a)
+ labs <- node_labels(a)
+ min(sapply(labs, min))  # should be 1
+ max(sapply(labs, max))  # should be 4362
+ hist(log10(sapply(labs, length)))
  nleaves(a)
  cases <- 0:999
- ccl <- case_control_leaves(a,cases)
+ ccl <- case_control_leaves(a,cases)  # should be 999 and 3363
  colSums(ccl)
- cases <- 4001:4362
+ cases <- 4001:5000
  ccl <- case_control_leaves(a,cases)
- colSums(ccl)
+ colSums(ccl)   # should be 362 and 4000
  leaves <- leaf_count(a)
 */
   
