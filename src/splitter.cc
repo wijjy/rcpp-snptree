@@ -4,9 +4,10 @@
 bool SNPmatch(const Rcpp::IntegerMatrix &hap, const vector<int> &rows, int col) 
 {
   int SNP = hap(rows[0], col);
-  for (size_t j=0;j<rows.size();j++) 
-    if (hap(rows[j], col) != SNP) return false;
-    return true;
+  for (size_t j=0; j<rows.size(); j++) {
+    if (hap.at(rows.at(j), col) != SNP) return false;      // BOUNDS CHECK
+  }
+  return true;
 } 
 /** Are any of the labels not cases?                                             */
 template<typename T>
@@ -118,25 +119,26 @@ void splitter::edges_positions_counts(int *edge1, int *edge2, int *count, int *p
  */
 bool splitter::split(int position) {
   bool change=false;
-  list<binode *>::iterator ii=leaves.begin();
+  list<binode *>::iterator leaf_iter=leaves.begin();
   std::list<binode *> toadd;
-  while (ii!=leaves.end()) {
-    if ((*ii)->labels.size()>1) {
-      if (!SNPmatch(haps, (*ii)->labels, position)) {
-        vector< vector<int> > lab(2);
-        for (size_t jj=0;jj<(*ii)->labels.size();jj++) {
-          lab[haps((*ii)->labels[jj], position)].push_back((*ii)->labels[jj]);
+  while (leaf_iter != leaves.end() ) {
+    if (((*leaf_iter)->labels.size()>1) 
+          and (!SNPmatch(haps, (*leaf_iter)->labels, position))) {              
+        vector< vector<int> > new_labels(2);
+        for (size_t jj=0;jj<(*leaf_iter)->labels.size();jj++) {
+          new_labels[haps((*leaf_iter)->labels[jj], position)].push_back(
+              (*leaf_iter)->labels[jj]
+          );
         }
-        (*ii)->left =new binode(lab[0], *ii);
-        (*ii)->right=new binode(lab[1], *ii);
-        (*ii)->position=position;
-        toadd.push_back((*ii)->left);
-        toadd.push_back((*ii)->right);
-        internal.push_back(*ii);
-        ii=leaves.erase(ii);
+        (*leaf_iter)->left =new binode(new_labels[0], *leaf_iter);
+        (*leaf_iter)->right=new binode(new_labels[1], *leaf_iter);
+        (*leaf_iter)->position=position;
+        toadd.push_back((*leaf_iter)->left);
+        toadd.push_back((*leaf_iter)->right);
+        internal.push_back(*leaf_iter);               // this is now an internal node
+        leaf_iter=leaves.erase(leaf_iter);
         change=true;
-      } else ii++;
-    } else ii++;
+    } else leaf_iter++;
   }
   leaves.splice(leaves.begin(), toadd);
   return change;
@@ -208,11 +210,11 @@ void splitter::getNodesPositions(std::vector<int> &pos)
 * lexical search order */
 void splitter::getCaseControlLeaves(Rcpp::IntegerMatrix &ncc, const Rcpp::IntegerVector &cases) 
 {
-  NLRIterator<binode> ii(root_);
-  ii.nextLeaf();   // the root can never be a leaf
+  LRNIterator<binode> ii(root_);
   int count=0;
+  Rcpp::IntegerVector cases0off = cases-1;
   while (!ii.isend()) {
-    ncc(count, 0) = count_intersection((*ii)->labels, cases);
+    ncc(count, 0) = count_intersection((*ii)->labels, cases0off); // note the vectorised operation
     ncc(count, 1) = (*ii)->labels.size()-ncc(count, 0);
     count++;
     ii.nextLeaf();
@@ -243,9 +245,9 @@ void splitter::getLengths(int CentrePos,int *posLRnode, int *posLRtip)
       std::vector<int> &labs=(*ii)->labels;
       // find the maximum value to the left that is shared
       for (Left=CentrePos;Left>=0;Left--) {
-        int MatchSNP=haps(labs[0], Left);
+        int MatchSNP=haps.at(labs[0], Left);               // bounds check
         for (jj=1;jj<labs.size();jj++) {
-          if (haps(labs[jj], Left)!=MatchSNP) break;
+          if (haps.at(labs[jj], Left)!=MatchSNP) break;   // bounds check
         }
         // we we have reached the end of labels and there was no split
         // then continue - otherwise break
