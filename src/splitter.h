@@ -34,12 +34,12 @@ int count_intersection(vector<int> &a, int *cases, int nc);
 class splitter {
 public:
   /** Constructor for the splitter class                 */
-  splitter( Rcpp::IntegerMatrix haplotypes) 
+  splitter(const Rcpp::IntegerMatrix haplotypes) 
     :haps(haplotypes),
      samples(haplotypes.nrow()),
      nSNP(haplotypes.ncol()) {
     vector<int> root_labels(haplotypes.nrow());
-    for (int i=0; i<haplotypes.nrow(); i++) root_labels[i]=i+1;
+    for (int i=0; i<haplotypes.nrow(); i++) root_labels[i]=i;
     leaves.push_back(new binode(root_labels));
     root_=leaves.front();
   }
