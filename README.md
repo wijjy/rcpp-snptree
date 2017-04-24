@@ -1,6 +1,9 @@
 # snptree
 
-An R library for building and testing association of haplotypes and phenotypes using lexical trees.  This one is using the [Rcpp](http://www.rcpp.org/) library to interface more directly with my C++ code.  This has required a partial rewrite of the C++ classes so I have split this from the other project.
+An R library for building and testing association of haplotypes and phenotypes using lexical trees.  
+This one is using the [Rcpp](http://www.rcpp.org/) library to interface more directly with my 
+C++ code.  This has required a partial rewrite of the C++ classes so I have split this from 
+the other project.
 
 Test a fix
 
