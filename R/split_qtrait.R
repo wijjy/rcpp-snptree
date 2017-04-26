@@ -19,10 +19,9 @@
     rs <- rcppsplittestqtrait(d, qtrait, positions, reps, maxk, pickStat)
   
     p_ranks <- apply(rs, 2, function(x) (rank(x)[1]))
-    p <- 1 - (p_ranks - 0.5)/(reps + 1)
+    p <- 1.0 - (p_ranks - 0.5)/(reps + 1)
     
-    list(testStat = rs[1,], randTestStats = rs[-1,], p.value = p)
-    
+    list(testStat = rs[1,], randTestStats = rs[-1, ], p.value = p)
 }
 
 
