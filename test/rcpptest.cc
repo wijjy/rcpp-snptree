@@ -24,7 +24,6 @@ List testlist()
   return L;
 }
 
-<<<<<<< HEAD
 // [[Rcpp::export]]
 NumericVector testvec() 
 {
@@ -32,8 +31,6 @@ NumericVector testvec()
   return NumericVector(10, 1.0);
 
 }
-=======
->>>>>>> 9f795b88ea059100451d9e9df8b3953bd71c0c88
 
 // You can include R code blocks in C++ files processed with sourceCpp
 // (useful for testing and development). The R code will be automatically 
@@ -42,10 +39,7 @@ NumericVector testvec()
 
 /*** R
 a <- testlist()
-<<<<<<< HEAD
 testvec()
-=======
->>>>>>> 9f795b88ea059100451d9e9df8b3953bd71c0c88
 */
 
 

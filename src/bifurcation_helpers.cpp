@@ -34,7 +34,6 @@ void set_leaf_position(SEXP ptr, double pos) {
 }
 
 
-
 /** Return a representation of a node.  I use the same 
  * indexing as ape, so that we have 1..nleaves for the leaves and
  * then node nleaves+1 is the deepest node on the left brnach than 
@@ -116,6 +115,8 @@ Rcpp::NumericMatrix get_blocks_old(SEXP ptr, double gap=1) {
   }
   return boxes;
 }
+/** Return a matrix of blocks which have the same order as the nodes
+ from APE           */
 
 // [[Rcpp::export]]
 Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id) {
@@ -123,7 +124,7 @@ Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id) {
   s->calculate_id_top_bottom(id);   // gets the tops and bottoms 
   
   int leaves = s->nleaves();
-  Rcpp::NumericMatrix boxes(2*leaves-1, 5);  // last one left for the root if needed
+  Rcpp::NumericMatrix boxes(2*leaves-1, 5);  
   
   int index=0;
   std::list<binode *>::const_iterator ii=s->begin_internal(); 
@@ -230,7 +231,7 @@ set_leaf_position(split_left, 0)
 calc_node_ranges(split_left, 100)
 leaf(split_left, 3)
 node(split_right, 6)
-id <- sort(sample(nrow(haps), 1000))
+id <- sort(sample(nrow(haps), 100))
 
 blocks_right <- get_blocks(split_right, gap=100)
 id_blocks_right <- get_id_blocks(split_right, id)
@@ -265,9 +266,10 @@ plot(range(blocks_right[,1:2]), range(c(blocks_right[,3:4]),
 apply(blocks_right, 1, plot_block)
 apply(id_blocks_right, 1, plot_block, col="red", border="red")
 
+locator(n=1)
 axis(1)
-plot_block(blocks[26,])
-polygon(boxes[,1], boxes[,2])
+
+
 */
 
 
