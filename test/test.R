@@ -1,7 +1,7 @@
 library(rcppsnptree)
 data("snptreeExample")
 a <- simple_split(haps, position)
-p <- get_phylo()
+p <- get_phylo(a)
 nleaves(a)
 cases <- 1:1000
 ccl <- case_control_leaves(a,cases)
@@ -41,3 +41,4 @@ plot_stump <- function(x1, x2, y1, h1, y2, h2, gap) {
 }
 
 plot_stump(0.5, 1, 0.4, 0.2, 0.6, 0.15, 0.05)
+
