@@ -23,3 +23,6 @@ recolour_block <- function(blocks, col="green") {
   add_block(blocks, w, col=col, border=col)
 }
 
+plot_left_right <- function(left_blocks, right_blocks) {
+  
+}
