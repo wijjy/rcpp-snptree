@@ -206,18 +206,6 @@ Rcpp::IntegerVector individuals_matching_haplotype(SEXP ptr, const Rcpp::Integer
  
 /*** R
 
-plot_block <- function(v,  col="lightgrey" ...) {
-  x <- c(v[1], v[2], v[2], v[1])
-  y <- c(v[3], v[4], v[4]+v[5], v[3]+v[5])
-  xspline(x,y, col=col, border=col, shape=0, ...)
-}
-plot_block <- function(v,  col="lightgrey", border="darkgrey", ...) {
-    x <- c(v[1], (3*v[1]+v[2])/4, v[2], v[2]     ,    (3*v[1]+v[2])/4, v[1])
-    y <- c(v[3],   (v[3]+v[4])/2, v[4], v[4]+v[5], (v[3]+v[4])/2+v[5], v[3]+v[5])
-    s <- c(   0,              -1,    0,         0,                 -1,    0)
-
-  xspline(x,y, col=col, shape=s, border=border, open=FALSE, ...)
-}
 library(rcppsnptree)
 data(snptreeExample)
 
@@ -248,15 +236,17 @@ plot(range(blocks_left[,1:2]), range(c(blocks_left[,3:4]),
                                      c(blocks_left[,3:4])+blocks_left[,5]), 
      axes=FALSE, xlab="", ylab="", type="n")
 
+if (FALSE) {
 plot_block(blocks_left[1,], col=2)
 plot_block(blocks_left[2,], col=3)
 plot_block(blocks_left[3,], col=4)
 plot_block(blocks_left[4,], col=4)
 plot_block(blocks_left[5,], col=4)
 plot_block(blocks_left[6,], col=6)
-
+}
 
 apply(blocks_left, 1, plot_block)
+locate_block(blocks_left)
 axis(1)
 
 plot(range(blocks_right[,1:2]), range(c(blocks_right[,3:4]),
@@ -264,10 +254,15 @@ plot(range(blocks_right[,1:2]), range(c(blocks_right[,3:4]),
      axes=FALSE, xlab="", ylab="", type="n")
 
 apply(blocks_right, 1, plot_block)
-apply(id_blocks_right, 1, plot_block, col="red", border="red")
 
+
+
+apply(id_blocks_right, 1, plot_block, col="red", border="red")
+locate_block()
 locator(n=1)
 axis(1)
+
+
 
 
 */
