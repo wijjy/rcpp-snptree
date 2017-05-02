@@ -1,3 +1,7 @@
+## Note that my tests are run from with the cpp files.
+
+
+
 library(rcppsnptree)
 data(snptreeExample)
 bifurcation_plot(haps, position, centre = 13, nleft=12, nright=10, gap=100)
