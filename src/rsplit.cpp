@@ -7,7 +7,14 @@
 // [[Rcpp::export]]
 SEXP simple_split(Rcpp::IntegerMatrix haplotypes, Rcpp::IntegerVector positions) {
     splitter *s = new splitter(haplotypes);                            // define the splitter object s
-    for (int i=0; i<positions.size(); i++) s->split(positions[i]-1);   // split at positions
+    for (int i=0; i<positions.size(); i++) {
+      bool issplit = s->split(positions[i]-1);   // split at positions
+      if (issplit)
+        Rprintf("Splitting at position %d\n",positions[i]-1);
+      else {
+        Rprintf("No split at position %d\n", positions[i]-1);
+      }
+    }
     // change the position on the leaves to the max position
     Rcpp::XPtr< splitter > pt(s, true);                                // get pointer as SEXP
     return pt;
