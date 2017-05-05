@@ -25,6 +25,18 @@ mark_individuals <- function(b) {
 }
 
 
+mark_individual <- function(b) {
+  ## click once on each side of the central block and draw those individual 
+  ## in both in a dfferent colour
+  
+  click_right <- locate_block(b$blocks_right)
+  click_left <- locate_block(b$blocks_left)
+  
+  
+  
+}
+
+
 add_block <- function(blocks, num, ...) {
   plot_block(blocks[num,], ...)
 }
@@ -33,6 +45,8 @@ recolour_block <- function(blocks, col="green") {
   w <- locate_block(blocks)
   add_block(blocks, w, col=col, border=col)
 }
+
+
 
 bifurc <- function(haplotypes, centre_position, nleft, nright, gap=100, 
                    realpositions=FALSE, mark_variants=FALSE, col="lightgrey") {
@@ -45,11 +59,9 @@ bifurc <- function(haplotypes, centre_position, nleft, nright, gap=100,
     split_right <- simple_split(haplotypes, (centre_position):(centre_position+nright-1))
     set_leaf_position(split_right, centre_position+nright-1)
     blocks_right <- get_blocks(split_right, gap=gap)
-    blocks_right <- blocks_right[-nrow(blocks_right),]
     split_left <- simple_split(haps, (centre_position-1):(centre_position-nleft))
     set_leaf_position(split_left, centre_position-nleft-2)
     blocks_left <- get_blocks(split_left, gap=gap)
-    blocks_left <- blocks_left[-nrow(blocks_left),]
   } else {
     stop("code currently only written for a SNP in the centre")
   }
@@ -88,12 +100,79 @@ bifurc <- function(haplotypes, centre_position, nleft, nright, gap=100,
   }
   
   par(opar)
+  list(blocks_right=blocks_right, blocks_left=blocks_left, 
+       left=split_left, right=split_right, centre=centre_position, 
+       nleft=nleft, nright=nright)
 }
+
+
+# This bifurcation plot takes the genotype of the centre and uses it to colour the 
+# rest of the plot.
+# So we can have centre-1 to the left and nsnps-centre to the right in total
+# this is another way of exploring the haplotypes.
+
+bifurcb <- function(haplotypes, centre_position, nleft, nright, gap=100, 
+                   realpositions=FALSE, mark_variants=FALSE, col="lightgrey") {
+  nsnps <- ncol(haplotypes)  
+  if (centre_position-nleft < 1)
+    stop("The centre is between centre-1 and centre.  There are not enough SNPs to the left.  nleft is too large")
+  if (centre_position + nright  > nsnps)
+    stop("Too many SNPs to the right of the centre")
+  if (centre_position < nsnps || centre_position > 1) {
+    split_right <- simple_split(haplotypes, (centre_position+1):(centre_position+nright))
+    set_leaf_position(split_right, centre_position+nright+1)
+    blocks_right <- get_blocks(split_right, gap=gap)
+    split_left <- simple_split(haps, (centre_position-1):(centre_position-nleft))
+    set_leaf_position(split_left, centre_position-nleft-2)
+    blocks_left <- get_blocks(split_left, gap=gap)
+  } else {
+    stop("code currently only written for a SNP in the centre")
+  }
+  ## Line up the left and right plots
+  height_diff <- blocks_left[1, 3] - blocks_right[1, 3]
+  blocks_right[,3:4] <- blocks_right[,3:4]+height_diff
+  ## Get a joining piece for the middle
+  x <- c(centre_position-1, centre_position-1, centre_position+1, centre_position+1)
+  y0 <- blocks_left[1, 3]
+  y1 <- y0 + blocks_left[1,5] + blocks_left[2, 5]
+  y <- c(y0, y1, y1, y0)
+  
+  if (realpositions) {
+    blocks_left[, 1] <- position[blocks_left[, 2]]
+    blocks_left[, 2] <- position[blocks_left[, 2]]
+    blocks_right[, 1] <- position[blocks_right[, 2]]
+    blocks_right[, 2] <- position[blocks_right[, 2]]   
+    x <- position[x]
+  }
+  
+  opar=par(mar=rep(1,4))
+  range_x <- range(c(blocks_left[,1], blocks_left[,2], blocks_right[,1] , blocks_right[,2])) 
+  range_y <- range(c(
+    blocks_left[, 3:4], 
+    blocks_left[, 3:4]+blocks_left[,5], 
+    blocks_right[, 3:4], blocks_right[, 3:4]+blocks_right[, 5]))
+  plot(range_x, range_y, type="n", xlab="", ylab="", axes=FALSE)
+  apply(blocks_left, 1, plot_block, col=col)
+  apply(blocks_right, 1, plot_block, col=col)
+  xspline(x, y, shape=0, open=FALSE, col=col)
+  
+  if (mark_variants) {
+    pos <- unique(c(range_left[,1], range_right[,1]))
+    #rug(pos)
+    lapply(pos, function(x) segments(x, 0, x, ry[2], lwd=0.5, col="white"))
+  }
+  
+  par(opar)
+  list(blocks_right=blocks_right, blocks_left=blocks_left, 
+       left=split_left, right=split_right, centre=centre_position, 
+       nleft=nleft, nright=nright)
+}
+
 
 if (FALSE) {
   library(rcppsnptree)
   data(snptreeExample)
-  bifurc(haps, 13, 12, 12, col="lightblue1")
+  bifurcb(haps, 13, 12, 11, col="lightblue1")
 }
 
 
