@@ -34,6 +34,8 @@ recolour_block <- function(blocks, col="green") {
   add_block(blocks, w, col=col, border=col)
 }
 
+
+
 bifurc <- function(haplotypes, centre_position, nleft, nright, gap=100, 
                    realpositions=FALSE, mark_variants=FALSE, col="lightgrey") {
   nsnps <- ncol(haplotypes)  
@@ -88,6 +90,9 @@ bifurc <- function(haplotypes, centre_position, nleft, nright, gap=100,
   }
   
   par(opar)
+  list(blocks_right=blocks_right, blocks_left=blocks_left, 
+       left=split_left, right=split_right, centre=centre_position, 
+       nleft=nleft, nright=nright)
 }
 
 if (FALSE) {
