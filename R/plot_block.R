@@ -168,6 +168,70 @@ bifurcb <- function(haplotypes, centre_position, nleft, nright, gap=100,
        nleft=nleft, nright=nright)
 }
 
+get_bifurc <- function(haplotypes, positions_left, positions_right,  gap=100) {
+  nsnps <- ncol(haplotypes)
+  r <- range(c(positions_left, positions_right))
+  
+  if (r[1] <1 || r[2] > nsnps)
+    stop("positions should be between 0 and nsnps")
+  
+  if(max(split_left) >= min(split_right))
+    stop("Left splits should all be less than right splits")
+
+  split_right <- simple_split(haplotypes, positions_right)
+  split_left <- simple_split(haplotypes, positions_left)
+    
+  set_leaf_position(split_right, r[2] + 1)
+  set_leaf_position(split_left, r[1] - 1)
+  
+  blocks_right <- get_blocks(split_right, gap=gap)
+  blocks_left <- get_blocks(split_left, gap=gap)
+ 
+  ## Line up the left and right plots
+  height_diff <- blocks_left[1, 3] - blocks_right[1, 3]
+  blocks_right[,3:4] <- blocks_right[,3:4]+height_diff
+  centre_left <- max(positions_left)
+  centre_right <- min(positions_right)
+  ## Get a joining piece for the middle
+  y0 <- blocks_left[1, 3]
+  y1 <- y0 + blocks_left[1,5] + blocks_left[2, 5]
+  centre <- data.frame(x=c(centre_left, centre_left, centre_right, centre_right), 
+                       y=c(y0, y1, y1, y0))
+  
+  if (realpositions) {
+    blocks_left[, 1] <- position[blocks_left[, 2]]
+    blocks_left[, 2] <- position[blocks_left[, 2]]
+    blocks_right[, 1] <- position[blocks_right[, 2]]
+    blocks_right[, 2] <- position[blocks_right[, 2]]   
+    x <- position[x]
+  }
+  
+  range_x <- range(c(blocks_left[,1], blocks_left[,2], blocks_right[,1] , blocks_right[,2])) 
+  range_y <- range(c(
+    blocks_left[, 3:4], 
+    blocks_left[, 3:4]+blocks_left[,5], 
+    blocks_right[, 3:4], blocks_right[, 3:4]+blocks_right[, 5]))
+ 
+  res <- list(blocks_right=blocks_right, 
+              blocks_left=blocks_left, 
+              left=split_left, 
+              right=split_right, 
+              centre=centre,
+              range_x=range_x, 
+              range_y <- range_y,
+              positions_left=positions_left,
+              positions_right=positions_right,
+              haplotypes=haplotypes)
+  
+  class(res) <- "bifurc"
+  return(res)
+  
+}
+
+
+plot_bifurc <- function(bb) {
+  
+}
 
 if (FALSE) {
   library(rcppsnptree)

@@ -33,7 +33,7 @@ The index to take (o offset).
 %% ~put references to the literature/web site here ~
 }
 \author{
-Ian Wilson \emai{ian.wilson@newcastle.ac.uk}
+Ian Wilson \email{ian.wilson@newcastle.ac.uk}
 }
 \note{
 %%  ~~further notes~~
