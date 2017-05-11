@@ -175,7 +175,7 @@ get_bifurc <- function(haplotypes, positions_left, positions_right,  gap=100) {
   if (r[1] <1 || r[2] > nsnps)
     stop("positions should be between 0 and nsnps")
   
-  if(max(split_left) >= min(split_right))
+  if(max(positions_left) >= min(positions_right))
     stop("Left splits should all be less than right splits")
 
   split_right <- simple_split(haplotypes, positions_right)
@@ -198,13 +198,7 @@ get_bifurc <- function(haplotypes, positions_left, positions_right,  gap=100) {
   centre <- data.frame(x=c(centre_left, centre_left, centre_right, centre_right), 
                        y=c(y0, y1, y1, y0))
   
-  if (realpositions) {
-    blocks_left[, 1] <- position[blocks_left[, 2]]
-    blocks_left[, 2] <- position[blocks_left[, 2]]
-    blocks_right[, 1] <- position[blocks_right[, 2]]
-    blocks_right[, 2] <- position[blocks_right[, 2]]   
-    x <- position[x]
-  }
+
   
   range_x <- range(c(blocks_left[,1], blocks_left[,2], blocks_right[,1] , blocks_right[,2])) 
   range_y <- range(c(
@@ -218,25 +212,38 @@ get_bifurc <- function(haplotypes, positions_left, positions_right,  gap=100) {
               right=split_right, 
               centre=centre,
               range_x=range_x, 
-              range_y <- range_y,
+              range_y = range_y,
               positions_left=positions_left,
               positions_right=positions_right,
               haplotypes=haplotypes)
   
   class(res) <- "bifurc"
   return(res)
+}
+
+
+
+
+locate_clicks <- function(bb, nclicks=1) {
+  click <- locator(n=nclicks)
+  
+}
+
+move_centre <- function(bb) {
+  block <- locate_click(bb, 1)
   
 }
 
 
-plot_bifurc <- function(bb) {
-  
-}
 
 if (FALSE) {
   library(rcppsnptree)
   data(snptreeExample)
   bifurcb(haps, 13, 12, 11, col="lightblue1")
+  
+  b <- get_bifurc(haps, 12:1, 13:24)
+  plot(b)
+  summary(b)
 }
 
 

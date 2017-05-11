@@ -95,9 +95,13 @@ Rcpp::List node(SEXP ptr, int index) {
 
   
 // [[Rcpp::export]]
-void calc_node_ranges(SEXP ptr, double gap) {
+void calc_node_ranges(SEXP ptr, double gap, bool log=false) {
   Rcpp::XPtr< splitter > s(ptr);    
-  s->calculate_top_bottom(gap); 
+  if (log)
+    s->calculate_top_bottom(gap); 
+  else
+    s->calculate_top_bottom_log2(gap); 
+  
 }
 
 
@@ -107,13 +111,13 @@ void calc_node_ranges(SEXP ptr, double gap) {
  */
 
 // [[Rcpp::export]]
-Rcpp::NumericMatrix get_blocks(SEXP ptr, double gap=1) {
+Rcpp::NumericMatrix get_blocks(SEXP ptr) {
   Rcpp::XPtr< splitter > s(ptr);
-  if (s->root()->range.first==0)
-    s->calculate_top_bottom(gap);   // gets the tops and bottoms 
-  
+  if (s->root()->range.first==0) 
+    Rcpp::stop("You have not calculated the positions of the leaves.");
+
   int leaves = s->nleaves();
-  Rcpp::NumericMatrix boxes(2*leaves-1, 6);  // last one left for the root if needed
+  Rcpp::NumericMatrix boxes(2*leaves-2, 6);  // last one left for the root if needed
   
   int index=0;
   NLRIterator<binode> ii(s->root());

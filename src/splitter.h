@@ -76,6 +76,8 @@ public:
    * for drawing.  gap is in proportion to unity.  
   */
   void calculate_top_bottom(double gap);
+  void calculate_top_bottom_log2(double gap);
+  
   /** calculate the top and bottom positions of each node 
    * for a subset of the data marked by individual.
    * gap is in proportion to unity.  

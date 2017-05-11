@@ -49,6 +49,8 @@ public:
     return o;
   }
   std::pair<double, double> recurse_calculate_top_bottom();
+  std::pair<double, double> recurse_calculate_top_bottom_log2();
+  
   std::pair<double, double> recurse_calculate_id_top_bottom(const Rcpp::IntegerVector &id);
   
   std::pair<int,int> RecurseLeftRightDistances(const std::vector<int> &Cases);

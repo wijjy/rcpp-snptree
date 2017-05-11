@@ -279,6 +279,7 @@ void splitter::calculate_top_bottom(double gap) {
   NLRIterator<binode> ii(root());
   ii.nextLeaf();                      // the root can never be a leaf
   std::pair<double, double> last(0.0, (*ii)->labels.size());
+
   (*ii)->range = last;
   ii.nextLeaf();
   while (!ii.isend()) {
@@ -289,6 +290,25 @@ void splitter::calculate_top_bottom(double gap) {
   }
   // now recurse to get the rest of the nodes
   root_->recurse_calculate_top_bottom();
+}
+/** calculate the top and bottom positions of each node 
+ * for drawing.  gap is in proportion to unity.  
+ */
+void splitter::calculate_top_bottom_log2(double gap) {
+  // start by calculating the top and bottom positions for the leaves
+  NLRIterator<binode> ii(root());
+  ii.nextLeaf();                      // the root can never be a leaf
+  std::pair<double, double> last(0.0, log2((*ii)->labels.size()+1.0));
+  (*ii)->range = last;
+  ii.nextLeaf();
+  while (!ii.isend()) {
+    (*ii)->range.first = gap + last.second;
+    (*ii)->range.second = (*ii)->range.first + log2((*ii)->labels.size()+1.0);
+    last = (*ii)->range;
+    ii.nextLeaf();
+  }
+  // now recurse to get the rest of the nodes
+  root_->recurse_calculate_top_bottom_log2();
 }
 
 

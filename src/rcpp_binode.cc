@@ -143,6 +143,29 @@ std::vector<double>  binode::RecurseSumHeight(const std::vector<int> &Cases,int 
 
 
 
+std::pair<double, double> binode::recurse_calculate_top_bottom_log2()  {
+  
+  std::pair<double, double> rangeleft, rangeright;
+  
+  if (left->isleaf()) {
+    rangeleft = left->range;
+  } else {
+    rangeleft = left->recurse_calculate_top_bottom();
+  }
+  
+  if (right->isleaf()) {
+    rangeright = right->range;
+  } else {
+    rangeright = right->recurse_calculate_top_bottom();
+  }
+  
+  double halfrange = log2(labels.size()+1.0)/2.0;               // half of the size
+  double mid = (rangeright.second+rangeleft.first)/2.0;
+  range.first = mid-halfrange;
+  range.second= mid+halfrange;
+  return range;
+}
+
 std::pair<double, double> binode::recurse_calculate_top_bottom()  {
   
   std::pair<double, double> rangeleft, rangeright;
