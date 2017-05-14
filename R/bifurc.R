@@ -77,11 +77,12 @@ plot.bifurc <- function(bb, col="lightgrey", border="black", ...) {
 if (FALSE) {
   library(rcppsnptree)
   data(snptreeExample)
-  b <- bifurcation(haps, 12:1, 13:24)
+  
+  b <- bifurcation(haps, 12:1, 13:24, log=FALSE)
   print(class(b))
   plot(b)
   summary(b)
-  b <- bifurcation(haps, 12:1, 13:24, log=TRUE)
+  b <- bifurcation(haps, 12:1, 13:24, log=TRUE, gap=2)
   plot(b)
 }
 

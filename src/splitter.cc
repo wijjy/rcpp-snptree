@@ -328,7 +328,6 @@ void splitter::calculate_id_top_bottom( const Rcpp::IntegerVector &id) {
     }
     ii++;
   }
-
   // now recurse to get the rest of the nodes
   root_->recurse_calculate_id_top_bottom(id);
 }

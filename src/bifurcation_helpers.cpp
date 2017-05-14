@@ -97,7 +97,7 @@ Rcpp::List node(SEXP ptr, int index) {
 // [[Rcpp::export]]
 void calc_node_ranges(SEXP ptr, double gap, bool log=false) {
   Rcpp::XPtr< splitter > s(ptr);    
-  if (log)
+  if (log==FALSE)
     s->calculate_top_bottom(gap); 
   else
     s->calculate_top_bottom_log2(gap); 
@@ -105,81 +105,6 @@ void calc_node_ranges(SEXP ptr, double gap, bool log=false) {
 }
 
 
-
-/** Return a bifurcation diagram as a set of blocks, each block being a node 
- * in the bifurcation tree
- */
-
-// [[Rcpp::export]]
-Rcpp::NumericMatrix get_blocks(SEXP ptr) {
-  Rcpp::XPtr< splitter > s(ptr);
-  if (s->root()->range.first==0) 
-    Rcpp::stop("You have not calculated the positions of the leaves.");
-
-  int leaves = s->nleaves();
-  Rcpp::NumericMatrix boxes(2*leaves-2, 6);  // last one left for the root if needed
-  
-  int index=0;
-  NLRIterator<binode> ii(s->root());
-  while (!ii.isend()) {
-    if ((*ii)->isleaf())
-      Rcpp::stop("should never get to a leaf in this function");
-    // left
-    boxes(index, 0) = (*ii)->position+1;
-    boxes(index, 1) = (*ii)->left->position+1;
-    boxes(index, 2) = (*ii)->range.first;
-    boxes(index, 3) = (*ii)->left->range.first;
-    boxes(index, 4) = (*ii)->left->height();
-    boxes(index, 5) = -1.0;     // This is an indicator for up, down etc.
-    // right
-    index++;
-    boxes(index, 0) = (*ii)->position+1;
-    boxes(index, 1) = (*ii)->right->position+1;
-    boxes(index, 2) = (*ii)->range.first+(*ii)->left->height();
-    boxes(index, 3) = (*ii)->right->range.first;
-    boxes(index, 4) = (*ii)->right->height();
-    boxes(index, 5) = 1.0;
-    ii.nextInternal();
-    index++;
-  }
-  return boxes;
-}
-
-// [[Rcpp::export]]
-Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id, double gap=1) {
-  Rcpp::XPtr< splitter > s(ptr);
-  if (s->root()->range.first==0)
-    s->calculate_id_top_bottom(id);   // gets the tops and bottoms 
-
-  
-  int leaves = s->nleaves();
-  Rcpp::NumericMatrix boxes(2*leaves-1, 6);  // last one left for the root if needed
-  
-  int index=0;
-  NLRIterator<binode> ii(s->root());
-  while (!ii.isend()) {
-    if ((*ii)->isleaf())
-      Rcpp::stop("should never get to a leaf in this function");
-    // left
-    boxes(index, 0) = (*ii)->position+1;
-    boxes(index, 1) = (*ii)->left->position+1;
-    boxes(index, 2) = (*ii)->range.first;
-    boxes(index, 3) = (*ii)->left->range.first;
-    boxes(index, 4) = (*ii)->left->height();
-    boxes(index, 5) = -1.0;     // This is an indicator for up, down etc.
-    // right
-    index++;
-    boxes(index, 0) = (*ii)->position+1;
-    boxes(index, 1) = (*ii)->right->position+1;
-    boxes(index, 2) = (*ii)->range.first+(*ii)->left->height();
-    boxes(index, 3) = (*ii)->right->range.first;
-    boxes(index, 4) = (*ii)->right->height();
-    boxes(index, 5) = 1.0;
-    ii.nextInternal();
-    index++;
-  }
-  return boxes;
-}
 
 
 // [[Rcpp::export]]

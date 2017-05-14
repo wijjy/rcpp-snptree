@@ -150,13 +150,13 @@ std::pair<double, double> binode::recurse_calculate_top_bottom_log2()  {
   if (left->isleaf()) {
     rangeleft = left->range;
   } else {
-    rangeleft = left->recurse_calculate_top_bottom();
+    rangeleft = left->recurse_calculate_top_bottom_log2();
   }
   
   if (right->isleaf()) {
     rangeright = right->range;
   } else {
-    rangeright = right->recurse_calculate_top_bottom();
+    rangeright = right->recurse_calculate_top_bottom_log2();
   }
   
   double halfrange = log2(labels.size()+1.0)/2.0;               // half of the size
