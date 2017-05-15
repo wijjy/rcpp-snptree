@@ -139,6 +139,26 @@ Rcpp::NumericMatrix get_blocks2(SEXP ptr, double gap=1) {
   return boxes;
 }
  
+ 
+// [[Rcpp::export]]
+Rcpp::IntegerVector individuals_matching_haplotype(SEXP ptr, const Rcpp::IntegerVector &haplotype, 
+                                                   const Rcpp::IntegerVector &position) {
+  // haplotype can have 0, 1 and -1 (to act as anything)
+  // Get the original tree whihc is to act as a scaffold
+  Rcpp::XPtr< splitter > s(ptr);
+  
+  // now get another tree just with the required nodes.  special split just one way
+  splitter tmp(*s);                           // define the temporary spliiter object
+  for (int i=0;i< position.size();i++) {
+    if (haplotype[position[i]] != -1) 
+      tmp.split(position[i]-1);   // split at positions
+  }
+  binode *bl = tmp.first_leaf_matching(position, haplotype);
+  return Rcpp::IntegerVector(bl->labels.begin(), bl->labels.end())-1;
+  
+}
+
+ 
 /*** R
 plot_block <- function(v,  col="lightgrey", ...) {
   x <- c(v[1], v[2], v[2], v[1])

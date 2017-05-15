@@ -32,7 +32,7 @@ Rcpp::NumericMatrix get_blocks(SEXP ptr) {
     index++;
     boxes(index, 0) = (*ii)->position+1;
     boxes(index, 1) = (*ii)->right->position+1;
-    boxes(index, 2) = (*ii)->range.first+(*ii)->left->height();
+    boxes(index, 2) = (*ii)->range.first + (*ii)->left->height();
     boxes(index, 3) = (*ii)->right->range.first;
     boxes(index, 4) = (*ii)->right->height();
     ii.nextInternal();
@@ -41,11 +41,13 @@ Rcpp::NumericMatrix get_blocks(SEXP ptr) {
   return boxes;
 }
 
+/** Return a matrix of blocks which have the same order as the nodes
+  * from APE           */
 // [[Rcpp::export]]
 Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id) {
   Rcpp::XPtr< splitter > s(ptr);
- // if (s->root()->range.first==0)
- //   s->calculate_id_top_bottom(id);   // gets the tops and bottoms 
+  
+  s->calculate_id_top_bottom(id);   // gets the tops and bottoms 
   
   int leaves = s->nleaves();
   Rcpp::NumericMatrix boxes(2*leaves-2, 5);  // last one left for the root if needed
@@ -58,16 +60,16 @@ Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id) {
     // left
     boxes(index, 0) = (*ii)->position+1;
     boxes(index, 1) = (*ii)->left->position+1;
-    boxes(index, 2) = (*ii)->range.first;
-    boxes(index, 3) = (*ii)->left->range.first;
-    boxes(index, 4) = (*ii)->left->height();
+    boxes(index, 2) = (*ii)->id_range.first;
+    boxes(index, 3) = (*ii)->left->id_range.first;
+    boxes(index, 4) = (*ii)->left->id_height();
     // right
     index++;
     boxes(index, 0) = (*ii)->position+1;
     boxes(index, 1) = (*ii)->right->position+1;
-    boxes(index, 2) = (*ii)->range.first+(*ii)->left->height();
-    boxes(index, 3) = (*ii)->right->range.first;
-    boxes(index, 4) = (*ii)->right->height();
+    boxes(index, 2) = (*ii)->id_range.first+(*ii)->left->id_height();
+    boxes(index, 3) = (*ii)->right->id_range.first;
+    boxes(index, 4) = (*ii)->right->id_height();
     ii.nextInternal();
     index++;
   }
@@ -90,5 +92,5 @@ plot(-1,-1, xlim=range(blocks[, 1:2]),
      ylim=range(c(blocks[, 3:4], blocks[, 3:4]+blocks[, 5])), 
      type="n", axes=FALSE, xlab="", ylab="")
 apply(blocks, 1, plot_block)
-apply(id_blocks, 1, plot_block, col="lightblue")
+apply(id_blocks, 1, plot_block, col="red")
 */
