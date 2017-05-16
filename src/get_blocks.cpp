@@ -119,7 +119,7 @@ test_plot(1000, 0.001, 50, gap=20)
 test_plot(1000, 0.01, 50, gap=20)
 test_plot(1000, 0.1, 50, gap=20)
 par(opar)
-
+ 
 ## Does this allow use to look at the correlation between a pair of sites.  
   
 
