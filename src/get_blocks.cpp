@@ -93,4 +93,30 @@ plot(-1,-1, xlim=range(blocks[, 1:2]),
      type="n", axes=FALSE, xlab="", ylab="")
 apply(blocks, 1, plot_block)
 apply(id_blocks, 1, plot_block, col="red")
+
+
+library(ARG)
+opar <- par(mfrow=c(2,2), mar=c(1,1,1,1))
+test_plot <- function(ss, rec, var, gap=10) {
+
+  b <- simARG(ss, sites=10*var, rec)
+  b <- mutate(b, var=var)
+  
+  sp <- simple_split(b$haplotype, 1:var)
+  set_leaf_position(sp, b$var+1)
+  calc_node_ranges(sp,  gap=gap)
+  
+  blocks<- get_blocks(sp)
+  plot(-1,-1, xlim=range(blocks[, 1:2]), 
+       ylim=range(c(blocks[, 3:4], blocks[, 3:4]+blocks[, 5])), 
+       type="n", axes=FALSE, xlab="", ylab="")
+  apply(blocks, 1, plot_block)
+  }
+  
+test_plot(1000, 0.0001, 50, gap=20)
+test_plot(1000, 0.001, 50, gap=20)
+test_plot(1000, 0.01, 50, gap=20)
+test_plot(1000, 0.1, 50, gap=20)
+par(opar)
+
 */
