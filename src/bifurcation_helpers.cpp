@@ -80,7 +80,7 @@ Rcpp::List internal_node(SEXP ptr, int index) {
 // [[Rcpp::export]]
 Rcpp::List node(SEXP ptr, int index) {
   Rcpp::XPtr< splitter > s(ptr);
-  LRNIterator<binode> ii(s->root());
+  NLRIterator<binode> ii(s->root());
   while (!ii.isend()) {
     if (index==1) {
       return (*ii)->list_node();
@@ -90,8 +90,6 @@ Rcpp::List node(SEXP ptr, int index) {
   }
   return 0;
 }
-
-
 
   
 // [[Rcpp::export]]

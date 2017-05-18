@@ -74,15 +74,51 @@ plot.bifurc <- function(bb, col="lightgrey", border="black", ...) {
 }
 
 
+
+locate_block <- function(bb) {
+  centre_block <- matrix(c(bb$centre$x[c(1,3)], bb$centre$y[1], bb$centre$y[1], bb$centre$y[2]-bb$centre$y[1]), nrow=1)
+  blocks <- rbind(bb$blocks_left, bb$blocks_right, centre_block)
+  
+  click <- locator(n=1)
+
+  ux <- (click$x > blocks[,1] & click$x < blocks[,2]) | (click$x > blocks[,2] & click$x < blocks[,1])
+  uy <- click$y > pmin(blocks[,3], blocks[,4])  & click$y <  pmax(blocks[,3], blocks[,4]+ blocks[,5])
+  w <- which(ux & uy)
+  if (length(w)!=1)
+    stop("need a single block, try to click within the block")
+  if (w==nrow(blocks))
+    stop("you have selected the centre.  no change made to plot")
+  
+  print(w)
+  if (w <= nrow(bb$blocks_left))
+    print(node(bb$left, w))
+  else 
+    print(node(bb$right, w-nrow(bb$blocks_left)))
+}
+
+
+identify_block <- function(bb) {
+  
+}
+
 if (FALSE) {
   library(rcppsnptree)
-  data(snptreeExample)
   
-  b <- bifurcation(haps, 12:1, 13:24, log=FALSE)
+  #library(ARG)
+  #a <- simARG(c(250,250), 5000, r=0.001, growthmodel = "exponential(10)", migmatrix = "Island(2, 10)")
+  #b <- mutate(a, var=50)
+  #simhaps <- b$haplotype
+  #simlocation <- b$location
+ # simdata <- list(haps=simhaps, location=b$location) 
+  #save(simdata, file="simdata.rda")
+  data(simdata)
+
+  b <- bifurcation(simdata$haps, 25:1, 26:50, gap=10,log=FALSE)
+  
   print(class(b))
   plot(b)
+  locate_block(b)
   summary(b)
-  b <- bifurcation(haps, 12:1, 13:24, log=TRUE, gap=2)
-  plot(b)
+
 }
 
