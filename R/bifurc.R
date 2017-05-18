@@ -50,7 +50,8 @@ bifurcation <- function(haplotypes, positions_left, positions_right,  gap=100, l
               range_y = range_y,
               positions_left=positions_left,
               positions_right=positions_right,
-              haplotypes=haplotypes)
+              haplotypes=haplotypes,
+              gap=gap)
   
   class(res) <- "bifurc"
   return(res)
@@ -73,10 +74,30 @@ plot.bifurc <- function(bb, col="lightgrey", border="black", ...) {
   par(opar)
 }
 
+recentre <- function(bb) {
+  click <- locator(n=1)
+  
+  x <- round(click$x, 0)
+  left_pos <- x:1
+  right_pos <- (x+1):ncol(bb$haplotypes)
+  dd <- bifurcation(bb$haplotypes, left_pos, right_pos, gap=bb$gap )
+  plot(dd)
+  return(dd)
+}
+
+add_id <- function(bb, labels, col="green") {
+  blocks_id_left <- get_id_blocks(bb$left, labels)
+  blocks_id_right <- get_id_blocks(bb$right, labels)
+  apply(blocks_id_left, 1, plot_block, col=col)
+  apply(blocks_id_right, 1, plot_block, col=col)
+  
+}
 
 
-locate_block <- function(bb) {
-  centre_block <- matrix(c(bb$centre$x[c(1,3)], bb$centre$y[1], bb$centre$y[1], bb$centre$y[2]-bb$centre$y[1]), nrow=1)
+
+locate_bifurc_block <- function(bb) {
+  centre_block <- matrix(c(bb$centre$x[c(1,3)], bb$centre$y[1], bb$centre$y[1], 
+                           bb$centre$y[2]-bb$centre$y[1]), nrow=1)
   blocks <- rbind(bb$blocks_left, bb$blocks_right, centre_block)
   
   click <- locator(n=1)
@@ -91,34 +112,36 @@ locate_block <- function(bb) {
   
   print(w)
   if (w <= nrow(bb$blocks_left))
-    print(node(bb$left, w))
+    print(nodeb(bb$left, w))
   else 
-    print(node(bb$right, w-nrow(bb$blocks_left)))
+    print(nodeb(bb$right, w-nrow(bb$blocks_left)))
 }
 
 
-identify_block <- function(bb) {
-  
-}
+
 
 if (FALSE) {
   library(rcppsnptree)
   
-  #library(ARG)
-  #a <- simARG(c(250,250), 5000, r=0.001, growthmodel = "exponential(10)", migmatrix = "Island(2, 10)")
-  #b <- mutate(a, var=50)
-  #simhaps <- b$haplotype
-  #simlocation <- b$location
- # simdata <- list(haps=simhaps, location=b$location) 
-  #save(simdata, file="simdata.rda")
+#  library(ARG)
+#  a <- simARG(c(250,250), 5000, r=0.001, growthmodel = "exponential(10)", migmatrix = "Island(2, 10)")
+#  b <- mutate(a, var=50)
+#  simhaps <- b$haplotype
+#  simlocation <- b$location
+#  simdata <- list(haps=simhaps, location=b$location) 
+#  save(simdata, file="simdata.rda")
   data(simdata)
 
   b <- bifurcation(simdata$haps, 25:1, 26:50, gap=10,log=FALSE)
   
   print(class(b))
   plot(b)
-  locate_block(b)
+  node <- locate_bifurc_block(b)
+  add_id(b, node$labels+1)
+  node2 <- locate_bifurc_block(b)
+  add_id(b, node2$labels, col="red")
   summary(b)
-
+  d <- recentre(b)
+add_id(d, locate_bifurc_block(d)$labels, col="red")
 }
 

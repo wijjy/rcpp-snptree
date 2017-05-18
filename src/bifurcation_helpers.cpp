@@ -78,19 +78,22 @@ Rcpp::List internal_node(SEXP ptr, int index) {
 }
 /** Return a representation of a node that should be in the same order as blocks  */
 // [[Rcpp::export]]
-Rcpp::List node(SEXP ptr, int index) {
+Rcpp::List nodeb(SEXP ptr, int index) {
   Rcpp::XPtr< splitter > s(ptr);
   NLRIterator<binode> ii(s->root());
   while (!ii.isend()) {
     if (index==1) {
-      return (*ii)->list_node();
+      return (*ii)->left->list_node_long();
+    } else if (index==2) {
+      return (*ii)->right->list_node_long();
     }
-    ++ii;
-    index--;
+    ii.nextInternal();
+    index -= 2;
   }
   return 0;
 }
 
+  
   
 // [[Rcpp::export]]
 void calc_node_ranges(SEXP ptr, double gap, bool log=false) {
