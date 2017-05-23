@@ -1,5 +1,7 @@
 
-bifurcation <- function(haplotypes, positions_left, positions_right,  gap=100, log=FALSE) {
+bifurcation <- function(haplotypes, positions_left, positions_right,  
+                        gap=100, log=FALSE) {
+  
   nsnps <- ncol(haplotypes)
   r <- range(c(positions_left, positions_right))
   
@@ -29,12 +31,14 @@ bifurcation <- function(haplotypes, positions_left, positions_right,  gap=100, l
   ## Get a joining piece for the middle
   y0 <- blocks_left[1, 3]
   y1 <- y0 + blocks_left[1,5] + blocks_left[2, 5]
-  centre <- data.frame(x=c(centre_left, centre_left, centre_right, centre_right), 
-                       y=c(y0, y1, y1, y0))
+  centre <- data.frame(
+    x=c(centre_left, centre_left, centre_right, centre_right), 
+    y=c(y0, y1, y1, y0)
+  )
+
+  range_x <- range(c(blocks_left[,1], blocks_left[,2], 
+                     blocks_right[,1] , blocks_right[,2])) 
   
-  
-  
-  range_x <- range(c(blocks_left[,1], blocks_left[,2], blocks_right[,1] , blocks_right[,2])) 
   range_y <- range(c(
     blocks_left[, 3:4], 
     blocks_left[, 3:4]+blocks_left[,5], 
@@ -61,8 +65,8 @@ bifurcation <- function(haplotypes, positions_left, positions_right,  gap=100, l
 summary.bifurc <- function(bf) {
   cat("A bifurcating tree on", nrow(bf$haplotypes), "individuals\n")
   cat("A total of", ncol(bf$haplotypes),"SNPs are available to split,\n")
-  cat(length(b$positions_left), "are split to the left and", length(b$positions_right), "to the right.\n" )
-  cat("There are", nleaves(b$left),"leaves to the left and", nleaves(b$right), "to the right\n")
+  cat(length(bf$positions_left), "are split to the left and", length(bf$positions_right), "to the right.\n" )
+  cat("There are", nleaves(bf$left),"leaves to the left and", nleaves(bf$right), "to the right\n")
 }
 
 plot.bifurc <- function(bb, col="lightgrey", border="black", ...) {
@@ -85,12 +89,11 @@ recentre <- function(bb) {
   return(dd)
 }
 
-add_id <- function(bb, labels, col="green") {
-  blocks_id_left <- get_id_blocks(bb$left, labels)
-  blocks_id_right <- get_id_blocks(bb$right, labels)
+add_id <- function(bb_, labels, col="green") {
+  blocks_id_left <- get_id_blocks(bb_$left, labels)
+  blocks_id_right <- get_id_blocks(bb_$right, labels)
   apply(blocks_id_left, 1, plot_block, col=col)
   apply(blocks_id_right, 1, plot_block, col=col)
-  
 }
 
 
@@ -132,16 +135,19 @@ if (FALSE) {
 #  save(simdata, file="simdata.rda")
   data(simdata)
 
-  b <- bifurcation(simdata$haps, 25:1, 26:50, gap=10,log=FALSE)
+  sim_b <- bifurcation(simdata$haps, 25:1, 26:50, gap=10,log=FALSE)
   
-  print(class(b))
-  plot(b)
-  node <- locate_bifurc_block(b)
-  add_id(b, node$labels+1)
-  node2 <- locate_bifurc_block(b)
-  add_id(b, node2$labels, col="red")
+  print(class(sim_b))
+  summary(sim_b)
+  plot(sim_b)
+  node <- locate_bifurc_block(sim_b)
+  add_id(sim_b, node$labels)
+  node2 <- locate_bifurc_block(sim_b)
+  add_id(sim_b, node2$labels, col="red")
   summary(b)
   d <- recentre(b)
 add_id(d, locate_bifurc_block(d)$labels, col="red")
+plot(sim_b)
+add_id(sim_b, which(simdata$location==2)-1)
 }
 

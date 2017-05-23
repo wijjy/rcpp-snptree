@@ -75,7 +75,7 @@ Rcpp::NumericMatrix get_blocks3(SEXP ptr) {
   return boxes;
 }
 /** Return a matrix of blocks which have the same order as the nodes
-  * from APE           */
+  * from APE  - note that the id values should be 0 offset          */
 // [[Rcpp::export]]
 Rcpp::NumericMatrix get_id_blocks(SEXP ptr, Rcpp::IntegerVector id) {
   Rcpp::XPtr< splitter > s(ptr);
