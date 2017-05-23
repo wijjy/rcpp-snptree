@@ -562,6 +562,12 @@ int recurse_edge_count_position(std::vector<std::vector<int> > &data, int node_l
                         Rcpp::Named("range")=get_range(),
                         Rcpp::Named("id_range")=get_id_range());
   }
+  Rcpp::List list_node_long() const {
+    return Rcpp::List::create(Rcpp::Named("position")=position,
+                              Rcpp::Named("range")=get_range(),
+                              Rcpp::Named("id_range")=get_id_range(),
+                              Rcpp::Named("labels") = Rcpp::IntegerVector(Rcpp::wrap(labels)));
+  }
   /** Is this a left branch?   */
   bool is_left() const {
     if (up==0) return false;
