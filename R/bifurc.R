@@ -92,6 +92,9 @@ recentre <- function(bb) {
 add_id <- function(bb_, labels, col="green") {
   blocks_id_left <- get_id_blocks(bb_$left, labels)
   blocks_id_right <- get_id_blocks(bb_$right, labels)
+  ## Line up the left and right plots
+  height_diff <- blocks_id_left[1, 3] - blocks_id_right[1, 3]
+  blocks_id_right[,3:4] <- blocks_id_right[,3:4]+height_diff
   apply(blocks_id_left, 1, plot_block, col=col)
   apply(blocks_id_right, 1, plot_block, col=col)
 }
