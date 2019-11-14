@@ -12,6 +12,12 @@ Improvements
 * Get plotting working in both directions
 * Can I integrate the PAC idea into tree building and tree viewing
 
+14/6/17
+
+* add way of automatically adding data from 1000 genomes
+* Or do I need a 1000 genomes library.
+* interface with code from `haplostrips`
+
 ## List
 
 1. See how haplostrips deals with vcf files
@@ -23,6 +29,7 @@ Improvements
 
 
 ## Talk
+
 In my the usual way, the way to do this is to get a talk prepared on the material.
 
 1. Genetic information can be represented by trees
@@ -37,3 +44,14 @@ In my the usual way, the way to do this is to get a talk prepared on the materia
 	* haplostrips
 	
 3. Can we do better with models?
+
+
+## Data Ideas
+
+I would like to be able to use this to read in data from a variety of formats.
+
+* Simulated
+* from fastPHASE and other phasing algorithms
+
+But I need some sort of better framework.  Perhaps work on the in memory representation of
+data first.
